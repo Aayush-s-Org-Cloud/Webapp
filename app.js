@@ -13,9 +13,6 @@ app.use((err, req, res, next) => {
   }
   next(err);
 });
-
-app.get('/test', (req, res) => {
-  res.send('Health Checker Working');        
-});
+app.use(handleNotFound);
 
 module.exports = app;
