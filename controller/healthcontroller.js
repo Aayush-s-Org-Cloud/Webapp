@@ -17,7 +17,9 @@ const healthCheck = async (req, res, next) => {
     if (req.headers['content-length'] && parseInt(req.headers['content-length']) > 0) {
       return res.status(400).send();  
     }
-
+    if (Object.keys(req.query).length !== 0) {
+      return res.status(400).send();
+  }
     // If everything is fine, return 200 OK
     res.status(200).send(); 
 
@@ -28,7 +30,7 @@ const healthCheck = async (req, res, next) => {
 };
 //unknown pages 
 const handleNotFound = (req, res) => {
-  return res.status(404).json({ error: 'Not Found' });
+  return res.status(404).json();
 };
 
 module.exports = {
