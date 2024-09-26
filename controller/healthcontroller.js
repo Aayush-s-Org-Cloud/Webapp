@@ -26,7 +26,12 @@ const healthCheck = async (req, res, next) => {
     return res.status(503).send();  
   }
 };
+//unknown pages 
+const handleNotFound = (req, res) => {
+  return res.status(404).json({ error: 'Not Found' });
+};
 
 module.exports = {
   healthCheck,
+  handleNotFound
 };
