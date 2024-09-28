@@ -1,4 +1,4 @@
-const sequelize = require('../config/database');
+const { sequelize } = require('../config/database'); 
 
 const healthCheck = async (req, res, next) => {
   //  headers 
