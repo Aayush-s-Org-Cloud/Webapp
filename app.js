@@ -1,5 +1,7 @@
+
 const express = require('express');
 const app = express();
+ 
 const healthRoutes = require('./routes/health_checker_routes');
 const { handleNotFound } = require('./controller/healthcontroller');
 const sequelize = require('./config/database'); // Database connection
