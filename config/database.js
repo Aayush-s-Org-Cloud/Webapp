@@ -10,8 +10,8 @@ const sequelize = new Sequelize({
     database: process.env.DATA_DATABASE,
 });
  
-sequelize.sync()
+sequelize.sync({ alter: true })
     .then(() => console.log('Database synced successfully'))
     .catch((error) => console.error('Database sync failed:', error));
-
+    
 module.exports = sequelize;
