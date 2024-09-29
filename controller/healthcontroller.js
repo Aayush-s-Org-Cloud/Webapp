@@ -1,4 +1,4 @@
-const { sequelize } = require('../config/database'); 
+const sequelize = require('../config/database'); 
 
 const healthCheck = async (req, res, next) => {
   //  headers 
@@ -20,7 +20,7 @@ const healthCheck = async (req, res, next) => {
     if (Object.keys(req.query).length !== 0) {
       return res.status(400).send();
   }
-    // If everything is fine, return 200 OK
+    //ifeverything is fine, return 200 OK
     res.status(200).send(); 
 
   } catch (error) {
