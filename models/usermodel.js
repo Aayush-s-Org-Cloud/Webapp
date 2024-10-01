@@ -25,10 +25,7 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        token: {
-            type: DataTypes.STRING,
-            allowNull: true
-        },
+       
         accountCreated: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
