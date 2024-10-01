@@ -7,4 +7,5 @@ const authenticate = require('../middleware/authentication');
 router.post('/user', userController.createUser);
 router.put('/user/self', authenticate, userController.updateUser);
 router.get('/user/self', authenticate, userController.getUserInfo);
+
 module.exports = router;

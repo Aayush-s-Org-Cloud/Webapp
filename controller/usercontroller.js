@@ -16,7 +16,7 @@ const createUser = async (request, response) => {
             email: newUser.email,
             firstName: newUser.firstName,
             lastName: newUser.lastName,
-            token: newUser.token,
+           
             accountCreated: newUser.accountCreated,
             accountUpdated: newUser.accountUpdated
         });
