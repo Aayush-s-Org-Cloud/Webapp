@@ -1,48 +1,60 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const userService = require('../services/user_service');
 const User = require('../models/usermodel'); 
+const validator = require('email-validator');
 //for creating user 
 const createUser = async (request, response) => {
-    const { email, firstName, lastName, password } = request.body;
-
-    if (!email || !password || !firstName || !lastName) {
+    const { email, first_name, last_name, password } = request.body;
+    
+    if (!email || !password || !first_name || !last_name) {
         return response.status(400).json({ error: 'Missing one or more required fields of user' });
     }
-
+    if (!validator.validate(email)) {
+        return response.status(422).json({ error: 'Invalid email format' });
+    }
+    const passwordcondi = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordcondi.test(password)) {
+        return response.status(422).json({ error: 'Password does not meet security criteria' });
+    }
     try {
         const newUser = await userService.createUser(request.body);
         response.status(201).json({
             id: newUser.id,
             email: newUser.email,
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
+            first_name: newUser.first_name,
+            last_name: newUser.last_name,
            
             accountCreated: newUser.accountCreated,
             accountUpdated: newUser.accountUpdated
         });
     } catch (error) {
         if (error.message === 'User with this email already exists') {
-            return response.status(400).json('User with this email already exists');
+            return response.status(409).json('User with this email already exists');
         }
 
         console.error("Failed to create new user:", error);
         response.status(500).json({ error: 'Internal server error', details: error.message });
     }
+    
 };
 // for updating user 
  const updateUser = async (req, res) => {
-    const { firstName, lastName, password } = req.body;
+    const { first_name, last_name, password } = req.body;
     const updates = Object.keys(req.body);
-    const allowedUpdates = ['firstName', 'lastName', 'password'];
+    const allowedUpdates = ['first_name', 'last_name', 'password'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
-
+    
     if (!isValidOperation) {
-        return res.status(400).json({ error: 'Attempted to update invalid fields' });
+        return res.status(403).json({ error: 'Attempted to update invalid fields' });
+    }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (password && !passwordRegex.test(password)) {
+        return res.status(422).json({ error: 'Password does not meet security criteria' });
     }
     try {
         const user = req.user; 
-        if (firstName) user.firstName = firstName;
-        if (lastName) user.lastName = lastName;
+        if (first_name) user.first_name = first_name;
+        if (last_name) user.last_name = last_name;
         if (password) user.password = await bcrypt.hash(password, 10);
 
         user.accountUpdated = new Date();  
@@ -52,18 +64,19 @@ const createUser = async (request, response) => {
         console.error("Failed to update user:", error);
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
+
 };
 //for user information
 const getUserInfo = async (req, res) => {
     try {
         const user = req.user;
-        const { id, firstName, lastName, email, accountCreated, accountUpdated } = user;
-
+        const { id, first_name, last_name, email, accountCreated, accountUpdated } = user;
+       
         // user information without password
         res.status(200).json({
             id,
-            firstName,
-            lastName,
+            first_name,
+            last_name,
             email,
             accountCreated,
             accountUpdated

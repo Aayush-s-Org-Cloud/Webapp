@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto'); 
 const sequelize = require('../config/database');   
 const User = require('../models/usermodel')(sequelize);
@@ -12,7 +12,7 @@ const isExistingUser = async (email) => {
 };
 
 const createUser = async (userData) => {
-    const { email, firstName, lastName, password } = userData;
+    const { email, first_name, last_name, password } = userData;
 
     // if user already exists
     const userExists = await isExistingUser(email);
@@ -26,8 +26,8 @@ const createUser = async (userData) => {
     // new user if user is not existing 
     const newUser = await User.create({
         email,
-        firstName,
-        lastName,
+        first_name,
+        last_name,
         password: hashedPassword,
         token  
     });
@@ -35,9 +35,8 @@ const createUser = async (userData) => {
     return {
         id: newUser.id,
         email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        token, 
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
         accountCreated: newUser.accountCreated,
         accountUpdated: newUser.accountUpdated
     };

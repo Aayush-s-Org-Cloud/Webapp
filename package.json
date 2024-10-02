@@ -11,7 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
+    "email-validator": "^2.0.4",
     "express": "^4.21.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.11.3",
