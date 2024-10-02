@@ -12,8 +12,8 @@ This is Cloud native Web Application which is build under node.js, Express.js, m
 ## Build and Deploy Instructions
 
 1. Clone the Repository to local machine.
-2.Install the Dependencies using npm.
-3. Create Database.
+2. Install the Dependencies using npm install.
+3. Setup mysql database on ubantu terminal.
 4. Setup .env file. 
 5. Start the Application. 
 
