@@ -7,14 +7,14 @@ const createUser = async (request, response) => {
     const { email, first_name, last_name, password } = request.body;
     
     if (!email || !password || !first_name || !last_name) {
-        return response.status(400).json({ error: 'Missing one or more required fields of user' });
+        return response.status(400).json();
     }
     if (!validator.validate(email)) {
         return response.status(422).json({ error: 'Invalid email format' });
     }
     const passwordcondi = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordcondi.test(password)) {
-        return response.status(422).json({ error: 'Password does not meet security criteria' });
+        return response.status(422).json();
     }
     try {
         const newUser = await userService.createUser(request.body);
@@ -44,12 +44,13 @@ const createUser = async (request, response) => {
     const allowedUpdates = ['first_name', 'last_name', 'password'];
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update));
     
+    
     if (!isValidOperation) {
-        return res.status(403).json({ error: 'Attempted to update invalid fields' });
+        return res.status(403).json();
     }
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (password && !passwordRegex.test(password)) {
-        return res.status(422).json({ error: 'Password does not meet security criteria' });
+        return res.status(422).json();
     }
     try {
         const user = req.user; 
@@ -66,8 +67,25 @@ const createUser = async (request, response) => {
     }
 
 };
+function enforceJsonContentType(req, res, next) {
+    // Check if the request is a PUT request
+    if (req.method === 'PUT','POST') {
+        // Ensure the content type is 'application/json'
+        const contentType = req.headers['content-type'];
+        if (!contentType || !contentType.includes('application/json')) {
+            return res.status(400).json();
+        }
+    }
+    next();
+}
 //for user information
 const getUserInfo = async (req, res) => {
+    if (req.method === 'GET' && (Object.keys(req.query).length !== 0 || Object.keys(req.body).length !== 0)) {
+        return res.status(400).json();
+    }
+    if (req.headers['content-length'] && parseInt(req.headers['content-length']) > 0) {
+        return res.status(400).send();  
+      }
     try {
         const user = req.user;
         const { id, first_name, last_name, email, accountCreated, accountUpdated } = user;
@@ -90,6 +108,7 @@ const getUserInfo = async (req, res) => {
 module.exports = {
     getUserInfo,  
     updateUser,
-    createUser
+    createUser,
+    enforceJsonContentType
 };
  

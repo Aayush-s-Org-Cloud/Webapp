@@ -32,11 +32,13 @@ module.exports = (sequelize) => {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false,
+            readOnly: true,
         },
         accountUpdated: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false,
+            readOnly: true,
         }
     });
     
