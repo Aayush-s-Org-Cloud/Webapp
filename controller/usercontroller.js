@@ -18,6 +18,10 @@ const createUser = async (request, response) => {
     if (!validator.validate(email)) {
         return response.status(422).json({ error: 'Invalid email format' });
     }
+    const first_last_vali = /^[a-z0-9]+$/;
+    if (!first_last_vali.test(first_name) || !first_last_vali.test(last_name)) {
+        return response.status(422).json();
+    }
     const passwordcondi = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordcondi.test(password)) {
         return response.status(422).json();
@@ -54,10 +58,19 @@ const createUser = async (request, response) => {
     if (!isValidOperation) {
         return res.status(403).json();
     }
+    const nameValidation = /^[a-z0-9]+$/;
+    if (first_name && !nameValidation.test(first_name)) {
+        return res.status(422).json();
+    }
+    if (last_name && !nameValidation.test(last_name)) {
+        return res.status(422).json();
+    }
+
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (password && !passwordRegex.test(password)) {
         return res.status(422).json();
     }
+    
     try {
         const user = req.user; 
         if (first_name) user.first_name = first_name;

@@ -11,8 +11,8 @@ describe('User API', () => {
         const uniqueSuffix = Date.now();
         const userData = {
             email: `testing${uniqueSuffix}@gmail.com`,
-            first_name: 'Test',
-            last_name: 'User',
+            first_name: 'test',
+            last_name: 'user',
             password: 'Password@456'
         };
 
@@ -46,7 +46,7 @@ describe('User API', () => {
             await request(app)
                 .put('/v1/user/self')
                 .set('Authorization', authHeader)
-                .send({ first_name: "Updated", last_name: "Updated last" })
+                .send({ first_name: "updated", last_name: "updatedlast" })
                 .expect(204);  
         });
     });
@@ -56,8 +56,8 @@ describe('User API', () => {
             const uniqueSuffix = Date.now();
             const userData = {
                 email: `dupli${uniqueSuffix}@hotmail.com`, 
-                first_name: 'Duplicate',
-                last_name: 'Test',
+                first_name: 'duplicate',
+                last_name: 'test',
                 password: 'Password@456'
             };
     
@@ -81,8 +81,8 @@ describe('User API', () => {
             const uniqueSuffix = Date.now();
             const userData = {
                 email: `auth${uniqueSuffix}@yahoo.com`,
-                first_name: 'Auth',
-                last_name: 'User',
+                first_name: 'auth',
+                last_name: 'user',
                 password: 'Password@456'
             };
 
@@ -108,7 +108,7 @@ describe('User API', () => {
             const userData = {
                 email: `correct${uniqueSuffix}@gmail.com`,
                 first_name: 'correct',
-                last_name: 'User',
+                last_name: 'user',
                 password: 'Password@456'
             };
 
