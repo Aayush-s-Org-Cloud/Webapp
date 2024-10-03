@@ -4,8 +4,14 @@ const User = require('../models/usermodel');
 const validator = require('email-validator');
 //for creating user 
 const createUser = async (request, response) => {
+    const listedfields = ['email', 'first_name', 'last_name', 'password','accountCreated','accountUpdated'];
+    const requestfields = Object.keys(request.body);
+
+    const nonlistedfield = requestfields.some(field => !listedfields.includes(field));
+    if (nonlistedfield) {
+        return response.status(400).json();
+    }
     const { email, first_name, last_name, password } = request.body;
-    
     if (!email || !password || !first_name || !last_name) {
         return response.status(400).json();
     }
@@ -29,7 +35,7 @@ const createUser = async (request, response) => {
         });
     } catch (error) {
         if (error.message === 'User with this email already exists') {
-            return response.status(409).json('User with this email already exists');
+            return response.status(409).json();
         }
 
         console.error("Failed to create new user:", error);

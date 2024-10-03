@@ -1,6 +1,6 @@
 module.exports = (sequelize) => {
     const { DataTypes } = require('sequelize');
-    
+    //user table 
     const User = sequelize.define('User', {
         id: {
             type: DataTypes.UUID,
@@ -20,26 +20,24 @@ module.exports = (sequelize) => {
         first_name: {
             type: DataTypes.STRING,
             allowNull: false,
-            
         },
         last_name: {
             type: DataTypes.STRING,
             allowNull: false,
-            
         },
-       
         accountCreated: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false,
-            readOnly: true,
         },
         accountUpdated: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false,
-            readOnly: true,
         }
+    }, {  
+        tableName: 'User',  
+        freezeTableName: true  
     });
     
     return User;
