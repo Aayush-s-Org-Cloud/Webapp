@@ -29,5 +29,8 @@
     "testMatch": [
       "**/tests/**/*_tests.js"
     ]
+  },
+  "directories": {
+    "test": "tests"
   }
 }
