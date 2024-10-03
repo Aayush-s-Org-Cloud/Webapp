@@ -1,8 +1,12 @@
 // Ensure the necessary modules are imported
 const request = require('supertest');
 const app = require('../app');  
-
+const sequelize = require('../config/database');
+const User = require('../models/usermodel'); 
 describe('User API', () => {
+    let server;
+
+    
     let userId;
     let authHeader;
 
@@ -16,7 +20,6 @@ describe('User API', () => {
             password: 'Password@456'
         };
 
-        // to create a new user
         const response = await request(app)
             .post('/v1/user')
             .send(userData)
@@ -127,3 +130,6 @@ describe('User API', () => {
         });
     });
         
+    afterAll(async () => {
+        await sequelize.close();  // Close the database connection
+    });

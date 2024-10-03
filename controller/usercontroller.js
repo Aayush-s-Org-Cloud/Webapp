@@ -28,6 +28,7 @@ const createUser = async (request, response) => {
     }
     try {
         const newUser = await userService.createUser(request.body);
+        response.setHeader('Cache-Control', 'no-cache');
         response.status(201).json({
             id: newUser.id,
             email: newUser.email,
@@ -79,6 +80,7 @@ const createUser = async (request, response) => {
 
         user.accountUpdated = new Date();  
         await user.save();
+        res.setHeader('Cache-Control', 'no-cache');
         res.status(204).send();  
     } catch (error) {
         console.error("Failed to update user:", error);
@@ -108,7 +110,7 @@ const getUserInfo = async (req, res) => {
     try {
         const user = req.user;
         const { id, first_name, last_name, email, accountCreated, accountUpdated } = user;
-       
+        res.setHeader('Cache-Control', 'no-cache');
         // user information without password
         res.status(200).json({
             id,
