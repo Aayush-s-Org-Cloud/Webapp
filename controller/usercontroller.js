@@ -4,7 +4,7 @@ const User = require('../models/usermodel');
 const validator = require('email-validator');
 //for creating user 
 const createUser = async (request, response) => {
-    const listedfields = ['email', 'first_name', 'last_name', 'password','accountCreated','accountUpdated'];
+    const listedfields = ['email', 'first_name', 'last_name', 'password'];
     const requestfields = Object.keys(request.body);
 
     const nonlistedfield = requestfields.some(field => !listedfields.includes(field));
@@ -57,7 +57,7 @@ const createUser = async (request, response) => {
     
     
     if (!isValidOperation) {
-        return res.status(403).json();
+        return res.status(400).json();
     }
     const nameValidation = /^[a-z0-9]+$/;
     if (first_name && !nameValidation.test(first_name)) {
