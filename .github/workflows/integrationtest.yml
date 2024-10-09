@@ -8,13 +8,7 @@ on:
 jobs:
   run-integration-tests:
     runs-on: ubuntu-latest
-
-    env:
-      DATA_HOST: ${{ vars.DATA_HOST }}
-      DATA_PORT: ${{vars.DATA_PORT}}
-      DATA_USER: ${{ secrets.DATA_USER }}
-      DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
-      DATA_DATABASE: ${{ vars.DATA_DATABASE }}   
+    environment: devtest   
 
     steps:
        
@@ -25,7 +19,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y mysql-server
-          sudo /lib/systemd/systemd-sysv-install enable mysql
           sudo systemctl enable mysql.service
           sudo systemctl start mysql.service
 
@@ -38,30 +31,30 @@ jobs:
       
       - name: Set up MySQL Database
         run: |
-        
           sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '${{ secrets.DATA_PASSWORD }}';"
           sudo mysql -u root --password="${{ secrets.DATA_PASSWORD }}" -e "CREATE DATABASE IF NOT EXISTS \`${{ vars.DATA_DATABASE }}\`;"
+
        
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '20.x'
 
-      
+       
       - name: Install Dependencies
         run: npm install
 
-      
+       
       - name: Run Integration Tests
         env:
           PORT: ${{ vars.PORT }}  
-          DATA_DIALECT: ${{ vars.DATA_DIALECT }}  
-          DATA_HOST: ${{ vars.DATA_HOST }}   
-          DATA_PORT: ${{ vars.DATA_PORT }}   
-          DATA_USER: ${{ secrets.DATA_USER }}   
-          DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
-          DATA_DATABASE: ${{ vars.DATA_DATABASE }}   
+          DATA_DIALECT: ${{ vars.DATA_DIALECT }}
+          DATA_HOST: ${{ vars.DATA_HOST }}
+          DATA_PORT: ${{ vars.DATA_PORT }}
+          DATA_USER: ${{ secrets.DATA_USER }}
+          DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
+          DATA_DATABASE: ${{ vars.DATA_DATABASE }}
         run: npm test
 
-      # test done 
-      - run: echo "Integration tests passed successfully!"  
+       
+      - run: echo "Integration tests passed successfully!"
