@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DB_HOST: localhost
-      DB_PORT: 3306
-      DB_USER: root
-      DB_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
-      DB_SCHEMA: ${{ secrets.DATA_DATABASE }}  
+      DATA_HOST: ${{ vars.DATA_HOST }}
+      PORT: ${{ vars.PORT }}
+      DATA_USER: ${{ secrets.DATA_USER }}
+      DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
+      DATA_DATABASE: ${{ vars.DATA_DATABASE }}  
 
     steps:
        
@@ -36,11 +36,12 @@ jobs:
           sudo mysql --version
 
       
-       
       - name: Set up MySQL Database
         run: |
-          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '${{ secrets.DATA_PASSWORD }}';"
-          sudo mysql -u root --password="${{ secrets.DATA_PASSWORD }}" -e "CREATE DATABASE IF NOT EXISTS \`${{ secrets.DATA_DATABASE }}\`;"
+        
+          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '$DATA_PASSWORD';"
+          sudo mysql -u root --password=$DATA_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $DATA_DATABASE;"
+
        
       - name: Set up Node.js
         uses: actions/setup-node@v2
