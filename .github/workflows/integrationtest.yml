@@ -13,13 +13,14 @@ jobs:
       DB_HOST: localhost
       DB_PORT: 3306
       DB_USER: root
-      DB_PASSWORD: ${{ secrets.DATA_PASSWORD }}  
-      DB_SCHEMA: ${{ secrets.DATA_DATABASE }}   
+      DB_PASSWORD: ${{ secrets.DATA_PASSWORD }}  # Use your secret for root password
+      DB_SCHEMA: ${{ secrets.DATA_DATABASE }}  # Database schema name
 
     steps:
        
       - uses: actions/checkout@v2
 
+       
       - name: Install MySQL
         run: |
           sudo apt-get update
@@ -34,7 +35,7 @@ jobs:
           sudo systemctl status mysql.service
           sudo mysql --version
 
-       
+      
       - name: Set up MySQL Database
         run: |
           sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '$DB_PASSWORD';"
@@ -46,20 +47,21 @@ jobs:
         with:
           node-version: '20.x'
 
-       
+      
       - name: Install Dependencies
         run: npm install
 
-       
+      
       - name: Run Integration Tests
         env:
-          PORT: ${{ secrets.PORT }}
-          DATA_DIALECT: mysql
-          DATA_HOST: localhost
-          DATA_PORT: 3306
-          DATA_USER: root
-          DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
-          DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
+          PORT: ${{ secrets.PORT }}  
+          DATA_DIALECT: ${{ secrets.DATA_DIALECT }}  
+          DATA_HOST: ${{ secrets.DATA_HOST }}   
+          DATA_PORT: ${{ secrets.DATA_PORT }}   
+          DATA_USER: ${{ secrets.DATA_USER }}   
+          DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
+          DATA_DATABASE: ${{ secrets.DATA_DATABASE }}   
         run: npm test
 
+      
       - run: echo "Integration tests passed successfully!"
