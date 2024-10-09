@@ -36,10 +36,12 @@ jobs:
           sudo mysql --version
 
       
-      - name: Create MySQL Database
+      - name: Set up MySQL Database
         run: |
-         
-         sudo mysql -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DATA_DATABASE }};"
+        
+          sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '${{ secrets.DATA_PASSWORD }}';"  
+          sudo mysql -u root --password=${{ secrets.DATA_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS \`${{ secrets.DATA_DATABASE }}\`;"
+
        
       - name: Set up Node.js
         uses: actions/setup-node@v2
