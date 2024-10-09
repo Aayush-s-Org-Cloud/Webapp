@@ -8,25 +8,40 @@ on:
 jobs:
   run-integration-tests:
     runs-on: ubuntu-latest
-    
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
-          MYSQL_DATABASE: ${{ secrets.DATA_DATABASE }}   
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${{ secrets.DATA_PASSWORD }}  
+      DB_SCHEMA: ${{ secrets.DATA_DATABASE }}   
 
     steps:
+       
       - uses: actions/checkout@v2
 
-      - name: Use Node.js
+      - name: Install MySQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y mysql-server
+          sudo /lib/systemd/systemd-sysv-install enable mysql
+          sudo systemctl enable mysql.service
+          sudo systemctl start mysql.service
+
+       
+      - name: Verify MySQL is Running
+        run: |
+          sudo systemctl status mysql.service
+          sudo mysql --version
+
+       
+      - name: Set up MySQL Database
+        run: |
+          sudo mysql -u root -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '$DB_PASSWORD';"
+          sudo mysql -u root --password=$DB_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $DB_SCHEMA;"
+
+       
+      - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
           node-version: '20.x'
@@ -36,21 +51,15 @@ jobs:
         run: npm install
 
        
-      - name: Initialize MySQL Database
-        run: |
-          mysql --user=root --password=$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DATA_DATABASE }}"
-
-       
       - name: Run Integration Tests
         env:
           PORT: ${{ secrets.PORT }}
-          DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
+          DATA_DIALECT: mysql
           DATA_HOST: localhost
-          DATA_PORT: ${{ secrets.DATA_PORT }}
-          DATA_USER: ${{ secrets.DATA_USER }}
+          DATA_PORT: 3306
+          DATA_USER: root
           DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
           DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
         run: npm test
 
-      
       - run: echo "Integration tests passed successfully!"
