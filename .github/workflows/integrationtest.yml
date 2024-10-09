@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Run Integration Tests
 
 on:
   pull_request:
@@ -6,15 +6,15 @@ on:
       - main
 
 jobs:
-  build:
+  run-integration-tests:
     runs-on: ubuntu-latest
-
+    
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.DATA_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.DATA_DATABASE }}
+          MYSQL_ROOT_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
+          MYSQL_DATABASE: ${{ secrets.DATA_DATABASE }}   
         ports:
           - 3306:3306
         options: >-
@@ -24,23 +24,33 @@ jobs:
           --health-retries 5
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Use Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '20'
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.x'
 
-    - name: Install dependencies
-      run: npm install
+       
+      - name: Install Dependencies
+        run: npm install
 
-    - name: Run tests
-      env:
-        PORT: ${{ secrets.PORT }}
-        DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
-        DATA_HOST: localhost
-        DATA_PORT: ${{ secrets.DATA_PORT }}
-        DATA_USER: ${{ secrets.DATA_USER }}
-        DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
-        DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
-      run: npm test
+       
+      - name: Initialize MySQL Database
+        run: |
+          mysql --user=root --password=$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DATA_DATABASE }}"
+
+       
+      - name: Run Integration Tests
+        env:
+          PORT: ${{ secrets.PORT }}
+          DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
+          DATA_HOST: localhost
+          DATA_PORT: ${{ secrets.DATA_PORT }}
+          DATA_USER: ${{ secrets.DATA_USER }}
+          DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
+          DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
+        run: npm test
+
+      
+      - run: echo "Integration tests passed successfully!"
