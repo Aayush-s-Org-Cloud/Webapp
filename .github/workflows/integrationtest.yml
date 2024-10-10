@@ -32,11 +32,11 @@ jobs:
     
     - name: Print environment variables for debugging
       run: |
-        echo "DATA_HOST: ${{ secrets.DATA_HOST }}"  # Ensure this is set as a secret if sensitive
+        echo "DATA_HOST: ${{ secrets.DATA_HOST }}"  
         echo "DATA_USER: ${{ secrets.DATA_USER }}"
         echo "DATA_PASSWORD is set: ${{ secrets.DATA_PASSWORD != '' }}"
         echo "DATA_DATABASE: ${{ secrets.DATA_DATABASE }}"
-        echo "DATA_PORT: ${{ secrets.DATA_PORT }}"  # Ensure port is correctly referenced if it's a secret or an environment variable
+        echo "DATA_PORT: ${{ secrets.DATA_PORT }}" 
 
     - name: Wait for MySQL to be ready
       run: |
