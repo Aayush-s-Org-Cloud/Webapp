@@ -3,6 +3,10 @@ const request = require('supertest');
 const app = require('../app');  
 const sequelize = require('../config/database');
 const User = require('../models/usermodel'); 
+beforeAll(async () => {
+    await sequelize.sync({ force: true });  
+  });
+  
 describe('User API', () => {
     let server;
 
