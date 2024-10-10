@@ -49,6 +49,7 @@ jobs:
     - name: Run Jest tests
       run: npm test
       env:
+        DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
         DATA_HOST: ${{ secrets.DATA_HOST }}
         DATA_USER: ${{ secrets.DATA_USER }}
         DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
