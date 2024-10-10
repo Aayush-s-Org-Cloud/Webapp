@@ -54,7 +54,7 @@ jobs:
         DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
         DATA_DATABASE : ${{ env.DATA_DATABASE }}
         DATA_PORT: ${{ env.DATA_PORT }}
-
+#TEST
     - name: Check MySQL logs if failed
       if: failure()
       run: docker logs $(docker ps -q --filter ancestor=mysql:8.0)
