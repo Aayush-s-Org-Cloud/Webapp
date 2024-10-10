@@ -14,7 +14,7 @@ jobs:
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: "no"
           MYSQL_ROOT_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
-          MYSQL_DATABASE: ${{ env.DATA_DATABASE }}           
+          MYSQL_DATABASE: ${{ secrets.DATA_DATABASE }}           
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -32,16 +32,16 @@ jobs:
     
     - name: Print environment variables for debugging
       run: |
-        echo "DATA_HOST: ${{ env.DATA_HOST }}"
+        echo "DATA_HOST: ${{ secrets.DATA_HOST }}"  # Ensure this is set as a secret if sensitive
         echo "DATA_USER: ${{ secrets.DATA_USER }}"
         echo "DATA_PASSWORD is set: ${{ secrets.DATA_PASSWORD != '' }}"
-        echo "DATA_DATABASE: ${{ env.DATA_DATABASE }}"
-        echo "DATA_PORT: ${{ env.DB_PORT }}"
-    
+        echo "DATA_DATABASE: ${{ secrets.DATA_DATABASE }}"
+        echo "DATA_PORT: ${{ secrets.DATA_PORT }}"  # Ensure port is correctly referenced if it's a secret or an environment variable
+
     - name: Wait for MySQL to be ready
       run: |
-        sudo apt-get install mysql-client
-        until mysql -h ${{ env.DATA_HOST }} -u ${{ secrets.DATA_USER }} -p${{ secrets.DATA_PASSWORD }} -e "SHOW DATABASES"; do
+        sudo apt-get install mysql-client -y
+        until mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "SHOW DATABASES"; do
           echo "Waiting for MySQL..."
           sleep 5
         done
@@ -49,12 +49,12 @@ jobs:
     - name: Run Jest tests
       run: npm test
       env:
-        DATA_HOST: ${{ env.DATA_HOST }}
+        DATA_HOST: ${{ secrets.DATA_HOST }}
         DATA_USER: ${{ secrets.DATA_USER }}
         DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
-        DATA_DATABASE : ${{ env.DATA_DATABASE }}
-        DATA_PORT: ${{ env.DATA_PORT }}
-#TEST
+        DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
+        DATA_PORT: ${{ secrets.DATA_PORT }}
+
     - name: Check MySQL logs if failed
       if: failure()
       run: docker logs $(docker ps -q --filter ancestor=mysql:8.0)
