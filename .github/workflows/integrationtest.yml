@@ -1,65 +1,52 @@
-name: Run Integration Tests
+name: Node.js CI
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ "main" ]
 
 jobs:
-  run-integration-tests:
+  build:
     runs-on: ubuntu-latest
-    environment: devtest   
+    environment: devtest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ secrets.DATA_PASSWORD }}
+          MYSQL_DATABASE: ${{ env.DATA_DATABASE }}
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=10s
+          --health-retries=5
 
     steps:
-       
-      - uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-       
-      - name: Install MySQL
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y mysql-server
-          sudo systemctl enable mysql.service
-          sudo systemctl start mysql.service
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '20'
 
-       
-      - name: Verify MySQL is Running
-        run: |
-          sudo systemctl status mysql.service
-          sudo mysql --version
+    - name: Install dependencies
+      run: npm install
 
-      
-      
-      - name: Configure MySQL User
-        run: |
-          sudo mysql -e "ALTER USER 'root'@'127.0.0.1' IDENTIFIED WITH 'mysql_native_password' BY '';"
-          sudo mysql -e "FLUSH PRIVILEGES;"
+    - name: Wait for MySQL
+      run: |
+        until nc -z 127.0.0.1 3306; do
+          echo "waiting for MySQL..."
+          sleep 1
+        done
 
-      - name: Create Database
-        run: |
-          sudo mysql -u root --password="" -e "CREATE DATABASE IF NOT EXISTS \`${{ env.DATA_DATABASE }}\`;"
-
-       
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20.x'
-
-       
-      - name: Install Dependencies
-        run: npm install
-
-       
-      - name: Run Integration Tests
-        env:
-          PORT: ${{ env.PORT }}  
-          DATA_DIALECT: ${{ env.DATA_DIALECT }}
-          DATA_HOST: ${{ env.DATA_HOST }}
-          DATA_PORT: ${{ env.DATA_PORT }}
-          DATA_USER: root
-          DATA_PASSWORD: Aayush@456
-          DATA_DATABASE: ${{ env.DATA_DATABASE }}
-        run: npm test
-
-       # test
-      - run: echo "Integration tests passed successfully!"
+    - name: Run tests
+      env:
+        PORT: ${{ env.PORT }}
+        DATA_DIALECT: ${{ env.DATA_DIALECT }}
+        DATA_HOST: localhost
+        DATA_PORT: 3306
+        DATA_USER: root
+        DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
+        DATA_DATABASE: ${{ env.DATA_DATABASE }}
+      run: npm test
