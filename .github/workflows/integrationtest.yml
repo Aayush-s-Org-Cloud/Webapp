@@ -1,46 +1,63 @@
-name: Node.js CI
+name: Check
 
 on:
   pull_request:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-
+    environment: devtest
     services:
       mysql:
-        image: mysql:2.18.1
+        image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.DATA_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.DATA_DATABASE }}
+          MYSQL_ALLOW_EMPTY_PASSWORD: "no"
+          MYSQL_ROOT_PASSWORD: ${{ secrets.DATA_PASSWORD }}   
+          MYSQL_DATABASE: ${{ secrets.DATA_DATABASE }}           
         ports:
           - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
-    - uses: actions/checkout@v2
-
+    - uses: actions/checkout@v3
+    
     - name: Use Node.js
-      uses: actions/setup-node@v2
+      uses: actions/setup-node@v3
       with:
-        node-version: '14'
+        node-version: '20'
 
     - name: Install dependencies
       run: npm install
+    
+    - name: Print environment variables for debugging
+      run: |
+        echo "DATA_HOST: ${{ secrets.DATA_HOST }}"  
+        echo "DATA_USER: ${{ secrets.DATA_USER }}"
+        echo "DATA_PASSWORD is set: ${{ secrets.DATA_PASSWORD != '' }}"
+        echo "DATA_DATABASE: ${{ secrets.DATA_DATABASE }}"
+        echo "DATA_PORT: ${{ secrets.DATA_PORT }}" 
 
-    - name: Run tests
+    - name: Wait for MySQL to be ready
+      run: |
+        sudo apt-get install mysql-client -y
+        until mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "SHOW DATABASES"; do
+          echo "Waiting for MySQL..."
+          sleep 5
+        done
+
+    - name: Run Jest tests
+      run: npm test
       env:
-        PORT: ${{ secrets.PORT }}
         DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
-        DATA_HOST: localhost
-        DATA_PORT: ${{ secrets.DATA_PORT }}
+        DATA_HOST: ${{ secrets.DATA_HOST }}
         DATA_USER: ${{ secrets.DATA_USER }}
         DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
         DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
-      run: npm test
+        DATA_PORT: ${{ secrets.DATA_PORT }}
+
+    - name: Check MySQL logs if failed
+      if: failure()
+      run: docker logs $(docker ps -q --filter ancestor=mysql:8.0)
+
+      # for stat check only 
