@@ -29,7 +29,10 @@ jobs:
 
     - name: Install dependencies
       run: npm install
-
+    - name: Start MySQL Service
+      run: |
+        sudo systemctl start mysql
+        sudo systemctl status mysql
     # Create MySQL User `aayush` and grant permissions
     - name: Setup MySQL User and Database
       run: |
