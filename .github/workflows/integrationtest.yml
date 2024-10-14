@@ -17,7 +17,7 @@ jobs:
           MYSQL_DATABASE: ${{ secrets.DATA_DATABASE }}           
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping -h localhost --silent" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - uses: actions/checkout@v3
@@ -29,29 +29,22 @@ jobs:
 
     - name: Install dependencies
       run: npm install
-    - name: Install MySQL Server
-      run: |
-        sudo apt-get update
-        sudo apt-get install mysql-server mysql-client -y
-    - name: Start MySQL Service
-      run: |
-        sudo systemctl start mysql
-    - name: Start MySQL Service
-      run: |
-        sudo systemctl start mysql
-        sudo systemctl status mysql
-    # Create MySQL User `aayush` and grant permissions
-    - name: Setup MySQL User and Database
+
+    # Wait for MySQL to be ready
+    - name: Wait for MySQL to be ready
       run: |
         sudo apt-get install mysql-client -y
         until mysqladmin ping -h 127.0.0.1 --silent; do
           echo "Waiting for MySQL..."
           sleep 5
         done
-        # Create aayush user and grant privileges
-        mysql -h localhost -u root --password=${{ secrets.DATA_PASSWORD }} -e "CREATE USER IF NOT EXISTS 'aayush'@'%' IDENTIFIED BY '${{ secrets.DATA_PASSWORD }}';"
-        mysql -h localhost -u root --password=${{ secrets.DATA_PASSWORD }} -e "GRANT ALL PRIVILEGES ON *.* TO 'aayush'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-        mysql -h localhost -u root --password=${{ secrets.DATA_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DATA_DATABASE }};"
+
+    # Create MySQL User `aayush` and grant privileges
+    - name: Setup MySQL User and Database
+      run: |
+        mysql -h 127.0.0.1 -u root --password=${{ secrets.DATA_PASSWORD }} -e "CREATE USER IF NOT EXISTS 'aayush'@'%' IDENTIFIED BY '${{ secrets.DATA_PASSWORD }}';"
+        mysql -h 127.0.0.1 -u root --password=${{ secrets.DATA_PASSWORD }} -e "GRANT ALL PRIVILEGES ON *.* TO 'aayush'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+        mysql -h 127.0.0.1 -u root --password=${{ secrets.DATA_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DATA_DATABASE }};"
 
     - name: Print environment variables for debugging
       run: |
@@ -61,9 +54,10 @@ jobs:
         echo "DATA_DATABASE: ${{ secrets.DATA_DATABASE }}"
         echo "DATA_PORT: ${{ secrets.DATA_PORT }}" 
 
-    - name: Wait for MySQL to be ready
+    # Wait for MySQL again to ensure it's available for Jest tests
+    - name: Wait for MySQL again
       run: |
-        until mysql -h ${{ secrets.DATA_HOST }} -u aayush --password=${{ secrets.DATA_PASSWORD }} -e "SHOW DATABASES"; do
+        until mysql -h 127.0.0.1 -u aayush --password=${{ secrets.DATA_PASSWORD }} -e "SHOW DATABASES"; do
           echo "Waiting for MySQL..."
           sleep 5
         done
@@ -71,8 +65,8 @@ jobs:
     - name: Run Jest tests
       run: npm test
       env:
-        DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
-        DATA_HOST: ${{ secrets.DATA_HOST }}
+        DATA_DIALECT: mysql
+        DATA_HOST: 127.0.0.1
         DATA_USER: aayush
         DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
         DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
@@ -81,5 +75,3 @@ jobs:
     - name: Check MySQL logs if failed
       if: failure()
       run: docker logs $(docker ps -q --filter ancestor=mysql:8.0)
-
-      #
