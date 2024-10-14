@@ -27,4 +27,4 @@ jobs:
 
       # Step 4: Validate the Packer template
       - name: Validate Packer template
-        run: packer validate template.pkr.hcl
+        run: packer validate packer/template.pkr.hcl
