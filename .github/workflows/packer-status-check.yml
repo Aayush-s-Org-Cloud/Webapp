@@ -10,17 +10,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-       
       - name: Checkout repository
         uses: actions/checkout@v2
-        
-      - name: Create zip
-        run: zip -r webapp.zip 
-       
+
       - name: Install Packer
         uses: hashicorp/setup-packer@v3.1.0
         with:
           packer-version: 1.11.2
+
+      - name: Create placeholder webapp.zip
+        run: |
+          mkdir -p placeholder && touch placeholder/placeholder.txt
+          zip -r webapp.zip placeholder
 
       - name: Run packer init
         run: packer init packer/template.pkr.hcl

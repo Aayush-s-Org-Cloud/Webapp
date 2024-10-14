@@ -56,11 +56,11 @@ build {
 
    
   provisioner "file" {
-    source      = "./webapp.zip"
-    destination = "/tmp/webapp.zip"
+    source      = "webapp.zip"  
+    destination = "/tmp/webapp.zip"  
   }
 
-  # Install unzip package (if needed)
+   
   provisioner "shell" {
     script = "packer/create-user.sh"
   }
@@ -70,17 +70,17 @@ build {
     script = "packer/unzip.sh"
   }
   
-  # Run a shell script to install Node.js, MySQL, and other dependencies
+   
   provisioner "shell" {
     script = "packer/install-dependencies.sh"
   }
 
-  # Run a shell script to configure the Node.js app (move files, npm install, etc.)
+   
   provisioner "shell" {
     script = "packer/app-setup.sh"
   }
 
-  # Final check to ensure everything is installed correctly
+   
   provisioner "shell" {
     inline = [
       "node --version",
