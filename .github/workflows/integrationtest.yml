@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    # Wait for MySQL to be ready
+    
     - name: Wait for MySQL to be ready
       run: |
         sudo apt-get install mysql-client -y
@@ -39,11 +39,12 @@ jobs:
           sleep 5
         done
 
-    # Create MySQL User `aayush` and grant privileges
+    
     - name: Setup MySQL User and Database
       run: |
-        mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "CREATE USER IF NOT EXISTS 'aayush'@'%' IDENTIFIED BY '${{ secrets.DATA_PASSWORD }}';"
-        mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "GRANT ALL PRIVILEGES ON *.* TO 'aayush'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+        
+        mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "CREATE USER IF NOT EXISTS '${{ secrets.DATA_USER }}'@'%' IDENTIFIED BY '${{ secrets.DATA_PASSWORD }}';"
+        mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "GRANT ALL PRIVILEGES ON *.* TO '${{ secrets.DATA_USER }}'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
         mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DATA_DATABASE }};"
 
     - name: Print environment variables for debugging
@@ -54,7 +55,7 @@ jobs:
         echo "DATA_DATABASE: ${{ secrets.DATA_DATABASE }}"
         echo "DATA_PORT: ${{ secrets.DATA_PORT }}" 
 
-    # Wait for MySQL again to ensure it's available for Jest tests
+    
     - name: Wait for MySQL again
       run: |
         until mysql -h ${{ secrets.DATA_HOST }} -u aayush --password=${{ secrets.DATA_PASSWORD }} -e "SHOW DATABASES"; do
