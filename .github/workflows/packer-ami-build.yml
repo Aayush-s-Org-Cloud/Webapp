@@ -1,0 +1,55 @@
+name: Packer AMI Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-ami:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip  # Install zip if needed
+
+
+      - name: Build and zip the application
+        run: |
+          zip -r webapp.zip .  # Zips everything in the root of your fork
+
+
+      - name: Upload the application artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: webapp
+          path: ./webapp.zip
+
+
+      - name: Download the artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: webapp
+
+      - name: Move artifact for Packer
+        run: |
+            mv webapp.zip ./webapp.zip
+      - name: Build AMI using Packer
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          PORT: ${{ secrets.PORT }}  # Secrets from the 'devtest' environment
+          DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
+          DATA_HOST: ${{ secrets.DATA_HOST }}
+          DATA_PORT: ${{ secrets.DATA_PORT }}
+          DATA_USER: ${{ secrets.DATA_USER }}
+          DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
+          DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
+        run: |
+          packer build template.pkr.hcl
