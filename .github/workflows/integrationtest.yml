@@ -29,6 +29,13 @@ jobs:
 
     - name: Install dependencies
       run: npm install
+    - name: Install MySQL Server
+      run: |
+        sudo apt-get update
+        sudo apt-get install mysql-server mysql-client -y
+    - name: Start MySQL Service
+      run: |
+        sudo systemctl start mysql
     - name: Start MySQL Service
       run: |
         sudo systemctl start mysql
