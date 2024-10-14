@@ -31,12 +31,7 @@ jobs:
       run: npm install
 
     # Configure MySQL bind-address to allow external connections
-    - name: Configure MySQL bind-address
-      run: |
-        echo "[mysqld]" >> /etc/mysql/my.cnf
-        echo "bind-address = 0.0.0.0" >> /etc/mysql/my.cnf
-        sudo systemctl restart mysql
-
+     
     # Wait for MySQL to be ready
     - name: Wait for MySQL to be ready
       run: |
