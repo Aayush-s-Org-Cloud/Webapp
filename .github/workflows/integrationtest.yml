@@ -26,7 +26,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install mysql-server -y
         sudo systemctl start mysql
-        sudo mysql -e "ALTER USER '${{ secrets.DATA_USER }}'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '${{ secrets.DATA_PASSWORD }}';"
+        sudo mysql -e "ALTER USER 'aayush'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY '${{ secrets.DATA_PASSWORD }}';"
 
      
     - name: Setup MySQL Database and User
