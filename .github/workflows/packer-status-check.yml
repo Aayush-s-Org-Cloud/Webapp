@@ -1,0 +1,28 @@
+name: Packer Status Check
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  packer-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Step 2: Install Packer
+      - name: Install Packer
+        uses: hashicorp/setup-packer@v1
+
+      # Step 3: Run `packer fmt` to check for formatting issues
+      - name: Run packer fmt
+        run: |
+          packer fmt -check -diff .
+      
+      # Step 4: Validate the Packer template
+      - name: Validate Packer template
+        run: packer validate template.pkr.hcl
