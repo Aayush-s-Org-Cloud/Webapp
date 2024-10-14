@@ -4,8 +4,10 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:
+jobs: 
+  
   test:
+    name: dev_integration
     runs-on: ubuntu-latest
     environment: devtest
     services:
