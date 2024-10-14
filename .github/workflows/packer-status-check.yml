@@ -16,7 +16,9 @@ jobs:
 
       # Step 2: Install Packer
       - name: Install Packer
-        uses: hashicorp/setup-packer@v1
+        uses: hashicorp/setup-packer@v3.1.0
+        with:
+          packer-version: 1.11.2
 
       # Step 3: Run `packer fmt` to check for formatting issues
       - name: Run packer fmt
