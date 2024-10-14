@@ -10,25 +10,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the repository
+       
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      # Step 2: Install Packer
+        
+      - name: Create zip
+        run: zip -r webapp.zip 
+       
       - name: Install Packer
         uses: hashicorp/setup-packer@v3.1.0
         with:
           packer-version: 1.11.2
 
-      # Step 3: Initialize Packer (install plugins)
       - name: Run packer init
         run: packer init packer/template.pkr.hcl
 
-      # Step 4: Run `packer fmt` to check for formatting issues
       - name: Run packer fmt
         run: |
           packer fmt -check -diff .
 
-      # Step 5: Validate the Packer template
       - name: Validate Packer template
         run: packer validate packer/template.pkr.hcl
