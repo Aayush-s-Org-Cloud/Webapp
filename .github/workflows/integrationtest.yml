@@ -46,6 +46,14 @@ jobs:
           sleep 5
         done
 
+    - name: Alter MySQL User Password
+      run: |
+        mysql -h ${{ secrets.DATA_HOST }} -u root --password=${{ secrets.DATA_PASSWORD }} -e "ALTER USER 'aayush'@'%' IDENTIFIED BY '${{ secrets.DATA_PASSWORD }}'; FLUSH PRIVILEGES;"
+
+    - name: Grant privileges to MySQL user
+      run: |
+        mysql -h ${{ secrets.DATA_HOST }} -u root --password=${{ secrets.DATA_PASSWORD }} -e "GRANT ALL PRIVILEGES ON *.* TO 'aayush'@'%'; FLUSH PRIVILEGES;"
+
     - name: Run Jest tests
       run: npm test
       env:
@@ -58,6 +66,4 @@ jobs:
 
     - name: Check MySQL logs if failed
       if: failure()
-      run: docker logs $(docker ps -q --filter ancestor=mysql:8.0)
-
-      
+      run: cat /var/log/mysql/error.log
