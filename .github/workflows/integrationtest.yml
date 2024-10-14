@@ -30,7 +30,14 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    
+    # Configure MySQL bind-address to allow external connections
+    - name: Configure MySQL bind-address
+      run: |
+        echo "[mysqld]" >> /etc/mysql/my.cnf
+        echo "bind-address = 0.0.0.0" >> /etc/mysql/my.cnf
+        sudo systemctl restart mysql
+
+    # Wait for MySQL to be ready
     - name: Wait for MySQL to be ready
       run: |
         sudo apt-get install mysql-client -y
@@ -39,35 +46,22 @@ jobs:
           sleep 5
         done
 
-    
+    # Create MySQL User 'aayush' and grant privileges
     - name: Setup MySQL User and Database
       run: |
-        
-        mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "CREATE USER IF NOT EXISTS '${{ secrets.DATA_USER }}'@'%' IDENTIFIED BY '${{ secrets.DATA_PASSWORD }}';"
-        mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "GRANT ALL PRIVILEGES ON *.* TO '${{ secrets.DATA_USER }}'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
-        mysql -h ${{ secrets.DATA_HOST }} -u ${{ secrets.DATA_USER }} --password=${{ secrets.DATA_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DATA_DATABASE }};"
+        mysql -h ${{ secrets.DATA_HOST }} -u root --password=${{ secrets.DATA_PASSWORD }} -e "CREATE USER IF NOT EXISTS 'aayush'@'%' IDENTIFIED BY '${{ secrets.DATA_PASSWORD }}';"
+        mysql -h ${{ secrets.DATA_HOST }} -u root --password=${{ secrets.DATA_PASSWORD }} -e "GRANT ALL PRIVILEGES ON *.* TO 'aayush'@'%' WITH GRANT OPTION; FLUSH PRIVILEGES;"
+        mysql -h ${{ secrets.DATA_HOST }} -u root --password=${{ secrets.DATA_PASSWORD }} -e "CREATE DATABASE IF NOT EXISTS ${{ secrets.DATA_DATABASE }};"
 
-    - name: Print environment variables for debugging
+    # Test MySQL connection with 'aayush'
+    - name: Test MySQL Connection
       run: |
-        echo "DATA_HOST: ${{ secrets.DATA_HOST }}"  
-        echo "DATA_USER: ${{ secrets.DATA_USER }}"
-        echo "DATA_PASSWORD is set: ${{ secrets.DATA_PASSWORD != '' }}"
-        echo "DATA_DATABASE: ${{ secrets.DATA_DATABASE }}"
-        echo "DATA_PORT: ${{ secrets.DATA_PORT }}" 
-
-    
-    - name: Wait for MySQL again
-      run: |
-        until mysql -h ${{ secrets.DATA_HOST }} -u aayush --password=${{ secrets.DATA_PASSWORD }} -e "SHOW DATABASES"; do
-          echo "Waiting for MySQL..."
-          sleep 5
-        done
+        mysql -h ${{ secrets.DATA_HOST }} -u aayush --password=${{ secrets.DATA_PASSWORD }} -e "SHOW DATABASES";
 
     - name: Run Jest tests
       run: npm test
       env:
-        PORT: ${{ secrets.PORT }}
-        DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
+        DATA_DIALECT: mysql
         DATA_HOST: ${{ secrets.DATA_HOST }}
         DATA_USER: aayush
         DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
