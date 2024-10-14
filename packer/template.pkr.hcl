@@ -62,22 +62,22 @@ build {
 
   # Install unzip package (if needed)
   provisioner "shell" {
-    script = "create-user.sh"
+    script = "packer/create-user.sh"
   }
 
   # Unzip the application
   provisioner "shell" {
-    script = "unzip.sh"
+    script = "packer/unzip.sh"
   }
   
   # Run a shell script to install Node.js, MySQL, and other dependencies
   provisioner "shell" {
-    script = "install-dependencies.sh"
+    script = "packer/install-dependencies.sh"
   }
 
   # Run a shell script to configure the Node.js app (move files, npm install, etc.)
   provisioner "shell" {
-    script = "app-setup.sh"
+    script = "packer/app-setup.sh"
   }
 
   # Final check to ensure everything is installed correctly
