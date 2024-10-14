@@ -54,10 +54,10 @@ build {
   name    = "nodejs-mysql-custom-ami"
   sources = ["source.amazon-ebs.ubuntu"]
 
-  # Upload the application zip file to the instance
+   
   provisioner "file" {
-    source      = "webapp.zip"  # Path to the zipped file on your local machine
-    destination = "/tmp/webapp.zip"  # Temporary location on the EC2 instance
+    source      = "./webapp.zip"
+    destination = "/tmp/webapp.zip"
   }
 
   # Install unzip package (if needed)
