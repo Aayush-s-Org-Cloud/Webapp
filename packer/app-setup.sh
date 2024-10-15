@@ -15,10 +15,15 @@ else
 fi
 
  
-sudo chmod 664 /opt/nodeapp/.env
+if [ -f /opt/nodeapp/.env ]; then
+    sudo chmod 664 /opt/nodeapp/.env
+    sudo chown csye6225:csye6225 /opt/nodeapp/.env
+    echo ".env file found and permissions set."
+else
+    echo "Error: .env file not found in /opt/nodeapp"
+    exit 1
+fi
 
-sudo chown csye6225:csye6225 /opt/nodeapp/.env
-# Set up a systemd service to run your Node.js app
 sudo bash -c 'cat > /etc/systemd/system/nodeapp.service <<EOL
 [Unit]
 Description=Node.js Application
@@ -39,11 +44,9 @@ SyslogIdentifier=nodeapp
 [Install]
 WantedBy=multi-user.target
 EOL'
-
-# Reload systemd and enable the Node.js service
+ 
 sudo systemctl daemon-reload
 sudo systemctl enable nodeapp
 sudo systemctl start nodeapp
 
-# Print service status
 sudo systemctl status nodeapp
