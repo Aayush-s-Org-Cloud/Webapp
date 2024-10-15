@@ -20,7 +20,7 @@ jobs:
 
       - name: Build and zip the application
         run: |
-          zip -r webapp.zip ./webapp   
+         zip -r webapp.zip .   
 
       - name: Upload the application artifact
         uses: actions/upload-artifact@v3
