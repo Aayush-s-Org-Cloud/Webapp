@@ -37,14 +37,14 @@ Description=Node.js Application
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/node /opt/nodeapp/Webapp/server.js
+ExecStart=/usr/bin/node /opt/nodeapp/server.js
 Restart=always
 User=csye6225
 Group=csye6225
-EnvironmentFile=/opt/nodeapp/Webapp/.env
+EnvironmentFile=/opt/nodeapp/.env
 Environment=PATH=/usr/bin:/usr/local/bin
 Environment=NODE_ENV=production
-WorkingDirectory=/opt/nodeapp/Webapp
+WorkingDirectory=/opt/nodeapp
 StandardOutput=syslog
 StandardError=syslog
 SyslogIdentifier=nodeapp
