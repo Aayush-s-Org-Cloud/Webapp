@@ -8,6 +8,7 @@ on:
 jobs:
   build-ami:
     runs-on: ubuntu-latest
+    environment: devtest
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -42,6 +43,18 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: webapp
+
+      - name: Create .env file
+        run: |
+            touch $GITHUB_WORKSPACE/.env
+            echo "DB_HOST=$DATA_HOST" >> .env
+            echo "DB_PORT=$DATA_PORT" >> .env
+            echo "DB_USER=$DATA_USER" >> .env
+            echo "DB_PASSWORD=$DATA_PASSWORD" >> .env
+            echo "DB_SCHEMA=$DATA_DATABASE" >> .env
+            echo "DB_DIALECT=$DATA_DIALECT" >> .env
+            echo "PORT=$PORT" >> .env
+            cat .env
        
       - name: Install Packer
         uses: hashicorp/setup-packer@v3.1.0
