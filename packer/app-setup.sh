@@ -14,21 +14,9 @@ else
     exit 1
 fi
 
-sudo mkdir -p /opt/nodeapp
-sudo chown -R csye6225:csye6225 /opt/nodeapp
-sudo touch /opt/nodeapp/.env
+ 
 sudo chmod 664 /opt/nodeapp/.env
 
-# Create the .env file with the required environment variables
-sudo tee -a /opt/nodeapp/.env > /dev/null <<EOL
-PORT=${PORT}
-DATA_DIALECT=${DATA_DIALECT}
-DATA_HOST=${DATA_HOST}
-DATA_PORT=${DATA_PORT}
-DATA_USER=${DATA_USER}
-DATA_PASSWORD=${DATA_PASSWORD}
-DATA_DATABASE=${DATA_DATABASE}
-EOL
 sudo chown csye6225:csye6225 /opt/nodeapp/.env
 # Set up a systemd service to run your Node.js app
 sudo bash -c 'cat > /etc/systemd/system/nodeapp.service <<EOL
