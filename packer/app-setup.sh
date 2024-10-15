@@ -38,8 +38,8 @@ EnvironmentFile=/opt/nodeapp/.env
 Environment=PATH=/usr/bin:/usr/local/bin
 Environment=NODE_ENV=production
 WorkingDirectory=/opt/nodeapp
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 SyslogIdentifier=nodeapp
 [Install]
 WantedBy=multi-user.target
