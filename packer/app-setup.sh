@@ -2,7 +2,7 @@
 
 # Navigate to the app directory
 sudo mkdir -p /opt/nodeapp
-sudo chown -R csye6225:csye6225 /opt/nodeap
+sudo chown -R csye6225:csye6225 /opt/nodeapp
 
 # Navigate to the app directory
 cd /opt/nodeapp
