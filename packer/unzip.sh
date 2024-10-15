@@ -6,8 +6,8 @@ sudo apt-get update -y
 sudo apt-get install unzip -y
 sudo mkdir -p /opt/nodeapp
 if [ -f /tmp/webapp.zip ]; then
-    sudo unzip /tmp/webapp.zip -d /opt/nodeapp
-    echo "Unzipped /tmp/webapp.zip to /opt/nodeapp"
+    sudo unzip /tmp/webapp.zip -d /opt/nodeapp/Webapp
+    echo "Unzipped /tmp/webapp.zip to /opt/nodeapp/Webapp"
 else
     echo "Error: /tmp/webapp.zip not found!"
     exit 1
