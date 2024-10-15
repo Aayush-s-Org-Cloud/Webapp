@@ -52,5 +52,5 @@ jobs:
         run: |
             packer init $GITHUB_WORKSPACE/packer/template.pkr.hcl
       - name: Build Packer Template
-        run: packer build $GITHUB_WORKSPACE/packer/centos.pkr.hcl
+        run: packer build $GITHUB_WORKSPACE/packer/template.pkr.hcl
        
