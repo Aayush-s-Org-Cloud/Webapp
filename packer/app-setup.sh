@@ -23,6 +23,8 @@ else
     echo "Error: .env file not found in /opt/nodeapp"
     exit 1
 fi
+echo "Displaying .env file contents:"
+cat /opt/nodeapp/.env
 
 sudo bash -c 'cat > /etc/systemd/system/nodeapp.service <<EOL
 [Unit]
