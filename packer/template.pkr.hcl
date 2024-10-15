@@ -35,13 +35,13 @@ source "amazon-ebs" "ubuntu" {
   subnet_id                   = var.subnet_id
   ami_name                    = "custom-nodejs-mysql-ami-{{timestamp}}"
   associate_public_ip_address = true
-   
+
   launch_block_device_mappings {
     device_name           = "/dev/sda1"
     volume_size           = 25
     volume_type           = "gp2"
     delete_on_termination = true
-}
+  }
 
   tags = {
     Name = "Packer-Build-NodeJS-MySQL"
@@ -54,13 +54,11 @@ build {
   name    = "nodejs-mysql-custom-ami"
   sources = ["source.amazon-ebs.ubuntu"]
 
-   
   provisioner "file" {
-    source      = "webapp.zip"  
-    destination = "/tmp/webapp.zip"  
+    source      = "webapp.zip"
+    destination = "/tmp/webapp.zip"
   }
 
-   
   provisioner "shell" {
     script = "packer/create-user.sh"
   }
@@ -69,18 +67,15 @@ build {
   provisioner "shell" {
     script = "packer/unzip.sh"
   }
-  
-   
+
   provisioner "shell" {
     script = "packer/install-dependencies.sh"
   }
 
-   
   provisioner "shell" {
     script = "packer/app-setup.sh"
   }
 
-   
   provisioner "shell" {
     inline = [
       "node --version",
