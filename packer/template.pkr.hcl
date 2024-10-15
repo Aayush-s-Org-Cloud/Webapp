@@ -28,20 +28,20 @@ variable "subnet_id" {
 }
 
 source "amazon-ebs" "ubuntu" {
-  region                  = var.aws_region
-  source_ami              = var.source_ami
-  instance_type           = "t2.medium"
-  ssh_username            = var.ssh_username
-  subnet_id               = var.subnet_id
-  ami_name                = "custom-nodejs-mysql-ami-{{timestamp}}"
+  region                      = var.aws_region
+  source_ami                  = var.source_ami
+  instance_type               = "t2.medium"
+  ssh_username                = var.ssh_username
+  subnet_id                   = var.subnet_id
+  ami_name                    = "custom-nodejs-mysql-ami-{{timestamp}}"
   associate_public_ip_address = true
    
   launch_block_device_mappings {
-    device_name = "/dev/sda1"
-    volume_size = 25
-    volume_type = "gp2"
+    device_name           = "/dev/sda1"
+    volume_size           = 25
+    volume_type           = "gp2"
     delete_on_termination = true
-  }
+}
 
   tags = {
     Name = "Packer-Build-NodeJS-MySQL"
