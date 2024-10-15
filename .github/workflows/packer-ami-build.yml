@@ -28,10 +28,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y zip
-
-      - name: Build and zip the application
+      - name: Create .env file and zip it 
         run: |
-         zip -r webapp.zip .   
+              touch $GITHUB_WORKSPACE/.env
+              echo "DB_HOST=$DATA_HOST" >> .env
+              echo "DB_PORT=$DATA_PORT" >> .env
+              echo "DB_USER=$DATA_USER" >> .env
+              echo "DB_PASSWORD=$DATA_PASSWORD" >> .env
+              echo "DB_SCHEMA=$DATA_DATABASE" >> .env
+              echo "DB_DIALECT=$DATA_DIALECT" >> .env
+              echo "PORT=$PORT" >> .env
+              cat .env
+              zip -r webapp.zip .   
 
       - name: Upload the application artifact
         uses: actions/upload-artifact@v3
@@ -44,18 +52,7 @@ jobs:
         with:
           name: webapp
 
-      - name: Create .env file
-        run: |
-            touch $GITHUB_WORKSPACE/.env
-            echo "DB_HOST=$DATA_HOST" >> .env
-            echo "DB_PORT=$DATA_PORT" >> .env
-            echo "DB_USER=$DATA_USER" >> .env
-            echo "DB_PASSWORD=$DATA_PASSWORD" >> .env
-            echo "DB_SCHEMA=$DATA_DATABASE" >> .env
-            echo "DB_DIALECT=$DATA_DIALECT" >> .env
-            echo "PORT=$PORT" >> .env
-            cat .env
-       
+     
       - name: Install Packer
         uses: hashicorp/setup-packer@v3.1.0
         with:
