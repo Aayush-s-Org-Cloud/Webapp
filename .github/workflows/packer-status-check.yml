@@ -24,10 +24,10 @@ jobs:
 
       - name: Run packer fmt
         run: |
-          packer fmt -check -diff $GITHUB_WORKSPACE/Webapp   
+          packer fmt -check -diff $GITHUB_WORKSPACE/packer  
 
       - name: Validate Packer template
-        run: packer validate $GITHUB_WORKSPACE/Webapp/packer/template.pkr.hcl   
+        run: packer validate $GITHUB_WORKSPACE/packer/template.pkr.hcl   
 
       - name: Zip Webapp folder
         run: |
