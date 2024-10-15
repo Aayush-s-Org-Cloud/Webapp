@@ -18,7 +18,16 @@ jobs:
         uses: hashicorp/setup-packer@v3.1.0
         with:
           packer-version: 1.11.2
-
+      - name: Zip Webapp folder
+        run: |
+            cd $GITHUB_WORKSPACE
+            zip -r webapp.zip Webapp   
+  
+      - name: Upload zip as artifact
+        uses: actions/upload-artifact@v3
+        with:
+            name: webapp-zip
+            path: $GITHUB_WORKSPACE/webapp.zip  
       - name: Run packer init
         run: packer init $GITHUB_WORKSPACE/packer/template.pkr.hcl
 
@@ -29,13 +38,4 @@ jobs:
       - name: Validate Packer template
         run: packer validate $GITHUB_WORKSPACE/packer/template.pkr.hcl   
 
-      - name: Zip Webapp folder
-        run: |
-          cd $GITHUB_WORKSPACE
-          zip -r webapp.zip Webapp   
-
-      - name: Upload zip as artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: webapp-zip
-          path: $GITHUB_WORKSPACE/webapp.zip  
+      
