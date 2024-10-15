@@ -12,22 +12,33 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip
+
+      - name: Build and zip the application
+        run: |
+          zip -r webapp.zip .   
+
+      - name: Upload the application artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: webapp
+          path: ./webapp.zip
+
+      - name: Download the artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: webapp
 
       - name: Install Packer
         uses: hashicorp/setup-packer@v3.1.0
         with:
           packer-version: 1.11.2
-      - name: Zip Webapp folder
-        run: |
-            cd $GITHUB_WORKSPACE
-            zip -r webapp.zip Webapp   
-  
-      - name: Upload zip as artifact
-        uses: actions/upload-artifact@v3
-        with:
-            name: webapp-zip
-            path: $GITHUB_WORKSPACE/webapp.zip  
+       
       - name: Run packer init
         run: packer init $GITHUB_WORKSPACE/packer/template.pkr.hcl
 
