@@ -49,4 +49,6 @@ jobs:
       - name: Validate Packer template
         run: packer validate $GITHUB_WORKSPACE/packer/template.pkr.hcl   
 
+        ##
+
       
