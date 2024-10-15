@@ -20,7 +20,7 @@ jobs:
 
       - name: Build and zip the application
         run: |
-          zip -r webapp.zip ./webapp   
+         zip -r webapp.zip .   
 
       - name: Upload the application artifact
         uses: actions/upload-artifact@v3
@@ -45,4 +45,5 @@ jobs:
           DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
           DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
         run: |
-          packer build template.pkr.hcl
+          packer build template.pkr.hcl 
+      ##
