@@ -9,9 +9,6 @@ jobs:
   build-ami:
     runs-on: ubuntu-latest
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_DEFAULT_REGION: "us-east-1"
       PORT: ${{ secrets.PORT }}   
       DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
       DATA_HOST: ${{ secrets.DATA_HOST }}
@@ -51,16 +48,11 @@ jobs:
       - name: Initialize Packer
         run: |
             packer init packer/template.pkr.hcl
-      - name: Debug AWS Credentials
-        run: |
-              echo "AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID"
-              echo "AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY"
-        env:
-              AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-              AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    
       - name: Build AMI using Packer
-        
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION: "us-east-1"
         run: |
-          packer build packer/template.pkr.hcl 
+              packer build packer/template.pkr.hcl
        
