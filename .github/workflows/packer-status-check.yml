@@ -7,6 +7,7 @@ on:
 
 jobs:
   packer-check:
+    name: pkr_status_check
     runs-on: ubuntu-latest
 
     steps:
@@ -17,21 +18,24 @@ jobs:
         uses: hashicorp/setup-packer@v3.1.0
         with:
           packer-version: 1.11.2
-      - name: Zip root directory
+
+      - name: Run packer init
+        run: packer init $GITHUB_WORKSPACE/Webapp/packer/template.pkr.hcl
+
+      - name: Run packer fmt
         run: |
-            zip -r webapp.zip .
-  
+          packer fmt -check -diff $GITHUB_WORKSPACE/Webapp  # Check formatting in the Webapp folder using GITHUB_WORKSPACE
+
+      - name: Validate Packer template
+        run: packer validate $GITHUB_WORKSPACE/Webapp/packer/template.pkr.hcl   
+
+      - name: Zip Webapp folder
+        run: |
+          cd $GITHUB_WORKSPACE
+          zip -r webapp.zip Webapp  # Use GITHUB_WORKSPACE to zip the folder
+
       - name: Upload zip as artifact
         uses: actions/upload-artifact@v3
         with:
           name: webapp-zip
-          path: webapp.zip
-      - name: Run packer init
-        run: packer init packer/template.pkr.hcl
-
-      - name: Run packer fmt
-        run: |
-          packer fmt -check -diff .
-
-      - name: Validate Packer template
-        run: packer validate packer/template.pkr.hcl
+          path: $GITHUB_WORKSPACE/webapp.zip  
