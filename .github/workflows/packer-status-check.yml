@@ -17,12 +17,15 @@ jobs:
         uses: hashicorp/setup-packer@v3.1.0
         with:
           packer-version: 1.11.2
-
-      - name: Create placeholder webapp.zip
+      - name: Zip root directory
         run: |
-          mkdir -p placeholder && touch placeholder/placeholder.txt
-          zip -r webapp.zip placeholder
-
+            zip -r webapp.zip .
+  
+      - name: Upload zip as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: webapp-zip
+          path: webapp.zip
       - name: Run packer init
         run: packer init packer/template.pkr.hcl
 
