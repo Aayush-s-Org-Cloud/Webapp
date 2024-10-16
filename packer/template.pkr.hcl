@@ -67,18 +67,21 @@ build {
   provisioner "shell" {
     script = "packer/unzip.sh"
   }
+  
   provisioner "shell" {
   script = "packer/install-dependencies.sh"
+
   environment_vars = [
-    "PORT=${env(\"PORT\")}",
-    "DATA_DIALECT=${env(\"DATA_DIALECT\")}",
-    "DATA_HOST=${env(\"DATA_HOST\")}",
-    "DATA_PORT=${env(\"DATA_PORT\")}",
-    "DATA_USER=${env(\"DATA_USER\")}",
-    "DATA_PASSWORD=${env(\"DATA_PASSWORD\")}",
-    "DATA_DATABASE=${env(\"DATA_DATABASE\")}"
+    "PORT=${env.PORT}",
+    "DATA_DIALECT=${env.DATA_DIALECT}",
+    "DATA_HOST=${env.DATA_HOST}",
+    "DATA_PORT=${env.DATA_PORT}",
+    "DATA_USER=${env.DATA_USER}",
+    "DATA_PASSWORD=${env.DATA_PASSWORD}",
+    "DATA_DATABASE=${env.DATA_DATABASE}"
   ]
 }
+
   provisioner "shell" {
     script = "packer/app-setup.sh"
   }
