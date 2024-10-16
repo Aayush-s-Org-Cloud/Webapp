@@ -70,15 +70,7 @@ build {
   
   provisioner "shell" {
   script = "packer/install-dependencies.sh"
-  environment_vars = [
-    "DATA_USER=${var.DATA_USER}",
-    "DATA_PASSWORD=${var.DATA_PASSWORD}",
-    "DATA_HOST=${var.DATA_HOST}",
-    "DATA_PORT=${var.DATA_PORT}",
-    "DATA_DIALECT=${var.DATA_DIALECT}",
-    "DATA_DATABASE=${var.DATA_DATABASE}",
-    "PORT=${var.PORT}"
-  ]
+  
   }
 
   provisioner "shell" {
