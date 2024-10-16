@@ -69,8 +69,7 @@ build {
   }
   
   provisioner "shell" {
-  script = "packer/install-dependencies.sh"
-  
+    script = "packer/install-dependencies.sh"
   }
 
   provisioner "shell" {
