@@ -71,13 +71,13 @@ build {
   provisioner "shell" {
     script = "packer/install-dependencies.sh"
     environment_vars = [
-      PORT: ${{ secrets.PORT }}   
-      DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
-      DATA_HOST: ${{ secrets.DATA_HOST }}
-      DATA_PORT: ${{ secrets.DATA_PORT }}
-      DATA_USER: ${{ secrets.DATA_USER }}
-      DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
-      DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
+      "PORT: ${{ secrets.PORT }}",   
+      "DATA_DIALECT: ${{ secrets.DATA_DIALECT }}",
+      "DATA_HOST: ${{ secrets.DATA_HOST }}",
+      "DATA_PORT: ${{ secrets.DATA_PORT }}",
+      "DATA_USER: ${{ secrets.DATA_USER }}",
+      "DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}",
+      "DATA_DATABASE: ${{ secrets.DATA_DATABASE }}"
     ]
   }
 
