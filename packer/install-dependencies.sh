@@ -21,14 +21,14 @@ sudo sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/m
 sudo systemctl restart mysql.service
 sudo systemctl enable mysql
 
-sudo mysql -e "CREATE USER IF NOT EXISTS '$DATA_USER'@'$DATA_HOST' IDENTIFIED BY '$DATA_PASSWORD';"
+sudo mysql -e "CREATE USER IF NOT EXISTS 'aayush'@'localhost' IDENTIFIED BY 'Aayush@456';"
  
-sudo mysql -e "ALTER USER '$DATA_USER'@'$DATA_HOST' IDENTIFIED WITH mysql_native_password BY '$DATA_PASSWORD';"
+sudo mysql -e "ALTER USER 'aayush'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Aayush@456';"
  
-sudo mysql -e "GRANT ALL PRIVILEGES ON *.* TO '$DATA_USER'@'$DATA_HOST' WITH GRANT OPTION;"
+sudo mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'aayush'@'localhost' WITH GRANT OPTION;"
 
 # Create the database
-sudo mysql -e "CREATE DATABASE $DATA_DATABASE;"
+sudo mysql -e "CREATE DATABASE HealthChecker;"
 
 # Flush privileges
 sudo mysql -e "FLUSH PRIVILEGES;"
