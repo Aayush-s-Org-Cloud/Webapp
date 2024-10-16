@@ -28,7 +28,7 @@ describe('User API', () => {
             .post('/v1/user')
             .send(userData)
             .expect('Content-Type', /json/)
-            .expect(201);
+            .expect(204);
 
         // if user was created successfully
         if (response.statusCode !== 201) {
