@@ -67,7 +67,7 @@ build {
   provisioner "shell" {
     script = "packer/unzip.sh"
   }
-  
+
   provisioner "shell" {
     script = "packer/install-dependencies.sh"
   }
