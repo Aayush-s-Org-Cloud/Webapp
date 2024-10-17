@@ -43,10 +43,10 @@ jobs:
         run: packer init $GITHUB_WORKSPACE/packer/template.pkr.hcl
 
       - name: Run packer fmt
-        run: packer fmt $GITHUB_WORKSPACE/packer
+        run: packer fmt $GITHUB_WORKSPACE/packer/
 
       # if any files were modified by packer fmt
-      - name: Check for uncommitted changes
+      - name: Check for format changes
         run: |
           if [[ $(git status --porcelain) ]]; then
             echo "Packer formatting changes detected! Failing the workflow."
