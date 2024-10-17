@@ -75,7 +75,12 @@ build {
   provisioner "shell" {
     script = "packer/app-setup.sh"
   }
-
+  provisioner "shell" {
+    inline = [
+      "if which git > /dev/null; then sudo apt-get remove -y git; fi",
+      "echo 'Verified git is not installed'"
+    ]
+  }
   provisioner "shell" {
     inline = [
       "node --version",
