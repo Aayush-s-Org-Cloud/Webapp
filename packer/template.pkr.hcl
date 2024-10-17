@@ -35,7 +35,7 @@ source "amazon-ebs" "ubuntu" {
   subnet_id                   = var.subnet_id
   ami_name                    = "custom-nodejs-mysql-ami-{{timestamp}}"
   associate_public_ip_address = true
-
+  disable_api_termination     = true
   launch_block_device_mappings {
     device_name           = "/dev/sda1"
     volume_size           = 25
@@ -75,7 +75,12 @@ build {
   provisioner "shell" {
     script = "packer/app-setup.sh"
   }
-
+  provisioner "shell" {
+    inline = [
+      "if which git > /dev/null; then sudo apt-get remove -y git; fi",
+      "echo 'Verified git is not installed'"
+    ]
+  }
   provisioner "shell" {
     inline = [
       "node --version",
