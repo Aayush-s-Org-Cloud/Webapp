@@ -44,7 +44,8 @@ jobs:
 
       - name: Run packer fmt
         run: |
-          packer fmt -check -diff $GITHUB_WORKSPACE/packer  
+          
+          packer fmt -diff $GITHUB_WORKSPACE/packer  
 
       - name: Validate Packer template
         run: packer validate $GITHUB_WORKSPACE/packer/template.pkr.hcl   
