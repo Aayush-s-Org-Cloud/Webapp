@@ -22,12 +22,12 @@ variable "ssh_username" {
   default = "ubuntu"
 }
 
-variable "subnet_id" {
+           variable "subnet_id" {
   type    = string
   default = "subnet-000265ec69f7365d5"
 }
 
-source "amazon-ebs" "ubuntu" {
+        source "amazon-ebs" "ubuntu" {
   region                      = var.aws_region
   source_ami                  = var.source_ami
   instance_type               = "t2.medium"
