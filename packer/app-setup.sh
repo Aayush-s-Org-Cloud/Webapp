@@ -15,16 +15,7 @@ else
 fi
 
  
-if [ -f /opt/nodeapp/.env ]; then
-    sudo chmod 664 /opt/nodeapp/.env
-    sudo chown csye6225:csye6225 /opt/nodeapp/.env
-    echo ".env file found and permissions set."
-else
-    echo "Error: .env file not found in /opt/nodeapp"
-    exit 1
-fi
-echo "Displaying .env file contents:"
-cat /opt/nodeapp/.env
+ 
 
 sudo bash -c 'cat > /etc/systemd/system/nodeapp.service <<EOL
 [Unit]
