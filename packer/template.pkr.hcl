@@ -28,7 +28,7 @@ variable "subnet_id" {
 }
 
 source "amazon-ebs" "ubuntu" {
-  region                      = variable.aws_region
+  region                      = var.aws_region
   source_ami                  = var.source_ami
   instance_type               = "t2.medium"
   ssh_username                = var.ssh_username
