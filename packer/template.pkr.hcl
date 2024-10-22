@@ -25,10 +25,10 @@ variable "ssh_username" {
 variable "subnet_id" {
   type    = string
   default = "subnet-000265ec69f7365d5"
-}
+
 
 source "amazon-ebs" "ubuntu" {
-  region                      =       var.aws_region
+  region                      = var.aws_region
   source_ami                  = var.source_ami
   instance_type               = "t2.medium"
   ssh_username                = var.ssh_username
