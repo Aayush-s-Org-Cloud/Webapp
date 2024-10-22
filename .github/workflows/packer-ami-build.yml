@@ -29,17 +29,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y zip
           
-      - name: Create .env file and zip it 
+      - name: Create zip  
         run: |
-              touch $GITHUB_WORKSPACE/.env
-              echo "DATA_HOST=$DATA_HOST" >> .env
-              echo "DATA_PORT=$DATA_PORT" >> .env
-              echo "DATA_USER=$DATA_USER" >> .env
-              echo "DATA_PASSWORD=$DATA_PASSWORD" >> .env
-              echo "DATA_DATABASE=$DATA_DATABASE" >> .env
-              echo "DATA_DIALECT=$DATA_DIALECT" >> .env
-              echo "PORT=$PORT" >> .env
-              cat .env
+              
               zip -r webapp.zip .   
 
       - name: Upload the application artifact
