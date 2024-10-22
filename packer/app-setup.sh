@@ -27,7 +27,7 @@ ExecStart=/usr/bin/node /opt/nodeapp/server.js
 Restart=always
 User=csye6225
 Group=csye6225
-EnvironmentFile=/opt/nodeapp/.env
+EnvironmentFile=/opt/nodeapp
 Environment=PATH=/usr/bin:/usr/local/bin
 Environment=NODE_ENV=production
 WorkingDirectory=/opt/nodeapp
