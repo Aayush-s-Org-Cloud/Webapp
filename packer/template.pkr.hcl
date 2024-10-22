@@ -84,7 +84,7 @@ build {
   provisioner "shell" {
     inline = [
       "node --version",
-      "mysql --version",
+     
       "echo 'Node.js and MySQL installed, app setup done!'"
     ]
   }
