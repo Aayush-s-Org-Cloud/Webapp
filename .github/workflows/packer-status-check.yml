@@ -53,7 +53,10 @@ jobs:
           -var "source_ami=${{ secrets.SOURCE_AMI }}" \
           -var "subnet_id=${{ secrets.SUBNET_ID }}" \
           $GITHUB_WORKSPACE/packer/template.pkr.hcl
-            
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION: 'us-east-1'  # Adjust this as necessary for your AWS configuration 
 
         ##
 
