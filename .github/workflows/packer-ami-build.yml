@@ -56,6 +56,5 @@ jobs:
               packer build \
                 -var "source_ami=${{ secrets.SOURCE_AMI }}" \
                 -var "subnet_id=${{ secrets.SUBNET_ID }}" \
-               
                 $GITHUB_WORKSPACE/packer/template.pkr.hcl
        
