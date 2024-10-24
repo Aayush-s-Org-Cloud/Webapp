@@ -48,8 +48,14 @@ jobs:
           packer fmt -diff $GITHUB_WORKSPACE/packer  
 
       - name: Validate Packer template
-        run: packer validate $GITHUB_WORKSPACE/packer/template.pkr.hcl   
+        run: 
+          packer validate \
+          -var "source_ami=${{ secrets.SOURCE_AMI }}" \
+          -var "subnet_id=${{ secrets.SUBNET_ID }}" \
+          -var "ami_users=${{ fromJson(secrets.AMI_USERS) }}" \
+          $GITHUB_WORKSPACE/packer/template.pkr.hcl
+            
 
-        ##
+        
 
       
