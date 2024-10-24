@@ -9,7 +9,7 @@ jobs:
   packer-check:
     name: pkr_status_check
     runs-on: ubuntu-latest
-
+    environment: devtest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -38,18 +38,21 @@ jobs:
         uses: hashicorp/setup-packer@v3.1.0
         with:
           packer-version: 1.11.2
-       
+
       - name: Run packer init
         run: packer init $GITHUB_WORKSPACE/packer/template.pkr.hcl
 
       - name: Run packer fmt
         run: |
-          
-          packer fmt -diff $GITHUB_WORKSPACE/packer  
+          packer fmt -diff $GITHUB_WORKSPACE/packer
 
       - name: Validate Packer template
-        run: packer validate $GITHUB_WORKSPACE/packer/template.pkr.hcl   
-
-        ##
-
-      
+        run: |
+          packer validate \
+            -var "source_ami=${{ secrets.SOURCE_AMI }}" \
+            -var "subnet_id=${{ secrets.SUBNET_ID }}" \
+            $GITHUB_WORKSPACE/packer/template.pkr.hcl
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'us-east-1'

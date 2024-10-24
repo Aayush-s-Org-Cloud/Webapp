@@ -14,7 +14,7 @@ variable "aws_region" {
 
 variable "source_ami" {
   type    = string
-  default = "var.source_ami"
+   
 }
 
 variable "ssh_username" {
@@ -24,12 +24,9 @@ variable "ssh_username" {
 
 variable "subnet_id" {
   type    = string
-  default = "var.subnet_id"
+   
 }
-variable "ami_users" {
-  type    = list(string)
-  default = ["var.ami_users"]
-}
+ 
 source "amazon-ebs" "ubuntu" {
   region                      = var.aws_region
   source_ami                  = var.source_ami
@@ -50,7 +47,7 @@ source "amazon-ebs" "ubuntu" {
     Name = "Packer-Build-NodeJS-MySQL"
   }
 
-  ami_users                   = var.ami_users
+  ami_users = ["084828563934"]
 }
 
 build {
