@@ -14,7 +14,7 @@ variable "aws_region" {
 
 variable "source_ami" {
   type    = string
-  default = "var.source_ami"
+  
 }
 
 variable "ssh_username" {
@@ -24,11 +24,11 @@ variable "ssh_username" {
 
 variable "subnet_id" {
   type    = string
-  default = "var.subnet_id"
+   
 }
 variable "ami_users" {
   type    = list(string)
-  default = ["var.ami_users"]
+   
 }
 source "amazon-ebs" "ubuntu" {
   region                      = var.aws_region
