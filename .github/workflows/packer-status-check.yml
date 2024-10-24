@@ -9,7 +9,7 @@ jobs:
   packer-check:
     name: pkr_status_check
     runs-on: ubuntu-latest
-
+    environment: devtest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
