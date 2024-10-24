@@ -26,10 +26,7 @@ variable "subnet_id" {
   type    = string
    
 }
-variable "ami_users" {
-  type    = list(string)
-   
-}
+ 
 source "amazon-ebs" "ubuntu" {
   region                      = var.aws_region
   source_ami                  = var.source_ami
@@ -50,7 +47,7 @@ source "amazon-ebs" "ubuntu" {
     Name = "Packer-Build-NodeJS-MySQL"
   }
 
-  ami_users                   = var.ami_users
+  ami_users = ["084828563934"]
 }
 
 build {

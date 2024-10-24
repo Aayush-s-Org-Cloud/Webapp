@@ -52,10 +52,9 @@ jobs:
           packer validate \
           -var "source_ami=${{ secrets.SOURCE_AMI }}" \
           -var "subnet_id=${{ secrets.SUBNET_ID }}" \
-          -var "ami_users=[${{ secrets.AMI_USERS }}]" \
           $GITHUB_WORKSPACE/packer/template.pkr.hcl
             
 
-        
+        ##
 
       
