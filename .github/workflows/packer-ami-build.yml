@@ -12,14 +12,11 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SUBNET_ID: ${{ secrets.SUBNET_ID }}
+      SOURCE_AMI: ${{ secrets.SOURCE_AMI }}
+      AMI_USERS: ${{ secrets.AMI_USERS }}
       AWS_DEFAULT_REGION: "us-east-1"
-      PORT: ${{ secrets.PORT }}   
-      DATA_DIALECT: ${{ secrets.DATA_DIALECT }}
-      DATA_HOST: ${{ secrets.DATA_HOST }}
-      DATA_PORT: ${{ secrets.DATA_PORT }}
-      DATA_USER: ${{ secrets.DATA_USER }}
-      DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
-      DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
+     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
