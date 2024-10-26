@@ -131,24 +131,9 @@ provisioner "file" {
   }
 }
 EOF
-  destination = "/tmp/amazon-cloudwatch-agent.json"
+   destination = "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
 }
 
-# Move the configuration file to the final location with sudo
-provisioner "shell" {
-  inline = [
-    "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
-    "echo 'CloudWatch Agent configuration moved to final directory.'"
-  ]
-}
-
-# Enable CloudWatch Agent to start automatically
-provisioner "shell" {
-  inline = [
-    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
-    "echo 'CloudWatch Agent configured and started'"
-  ]
-}
   provisioner "shell" {
     inline = [
       "node --version",
