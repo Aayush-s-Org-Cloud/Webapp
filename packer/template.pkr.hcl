@@ -91,8 +91,7 @@ build {
     ]
   }
 
-  # Copy CloudWatch Agent configuration file
-  provisioner "file" {
+    provisioner "file" {
     content = <<EOF
 {
   "agent": {
@@ -101,7 +100,7 @@ build {
   },
   "metrics": {
     "append_dimensions": {
-      "InstanceId": "\${aws:InstanceId}"
+      "InstanceId": "$${aws:InstanceId}"
     },
     "aggregation_dimensions": [["InstanceId"]],
     "metrics_collected": {
