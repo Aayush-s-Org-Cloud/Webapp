@@ -81,15 +81,15 @@ build {
       "echo 'Verified git is not installed'"
     ]
   }
-
-  # Install CloudWatch Agent
-  provisioner "shell" {
+   provisioner "shell" {
     inline = [
       "echo 'Installing CloudWatch Agent...'",
       "sudo apt-get update -y",
-      "sudo apt-get install -y amazon-cloudwatch-agent"
+      "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
+      "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb"
     ]
   }
+  
 
     provisioner "file" {
     content = <<EOF
