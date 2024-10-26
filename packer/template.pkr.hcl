@@ -81,18 +81,19 @@ build {
       "echo 'Verified git is not installed'"
     ]
   }
-   provisioner "shell" {
-    inline = [
-      "echo 'Installing CloudWatch Agent...'",
-      "sudo apt-get update -y",
-      "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
-      "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb"
-    ]
-  }
-  
+  # Install CloudWatch Agent
+provisioner "shell" {
+  inline = [
+    "echo 'Installing CloudWatch Agent...'",
+    "sudo apt-get update -y",
+    "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
+    "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb"
+  ]
+}
 
-    provisioner "file" {
-    content = <<EOF
+# Upload CloudWatch Agent configuration to a temporary location
+provisioner "file" {
+  content = <<EOF
 {
   "agent": {
     "metrics_collection_interval": 60,
@@ -130,17 +131,24 @@ build {
   }
 }
 EOF
-    destination = "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
-  }
+  destination = "/tmp/amazon-cloudwatch-agent.json"
+}
 
-  # Enable CloudWatch Agent to start automatically
-  provisioner "shell" {
-    inline = [
-      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
-      "echo 'CloudWatch Agent configured and started'"
-    ]
-  }
+# Move the configuration file to the final location with sudo
+provisioner "shell" {
+  inline = [
+    "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+    "echo 'CloudWatch Agent configuration moved to final directory.'"
+  ]
+}
 
+# Enable CloudWatch Agent to start automatically
+provisioner "shell" {
+  inline = [
+    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s",
+    "echo 'CloudWatch Agent configured and started'"
+  ]
+}
   provisioner "shell" {
     inline = [
       "node --version",
