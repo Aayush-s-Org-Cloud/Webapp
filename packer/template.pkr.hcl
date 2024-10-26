@@ -131,7 +131,16 @@ provisioner "file" {
   }
 }
 EOF
-   destination = "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
+    destination = "/tmp/amazon-cloudwatch-agent.json"
+}
+
+# Move the configuration file to the final location with sudo
+provisioner "shell" {
+  inline = [
+    "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/",
+    "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+    "echo 'CloudWatch Agent configuration moved to final directory.'"
+  ]
 }
 
   provisioner "shell" {
