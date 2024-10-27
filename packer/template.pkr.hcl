@@ -93,7 +93,7 @@ provisioner "shell" {
 
 # Upload CloudWatch Agent configuration to a temporary location
 provisioner "file" {
-  content = <<EOF
+   content = <<EOF
 {
   "agent": {
     "metrics_collection_interval": 60,
@@ -103,7 +103,6 @@ provisioner "file" {
     "append_dimensions": {
       "InstanceId": "$${aws:InstanceId}"
     },
-    "aggregation_dimensions": [["InstanceId"]],
     "metrics_collected": {
       "mem": {
         "measurement": ["mem_used_percent"],
@@ -112,6 +111,13 @@ provisioner "file" {
       "cpu": {
         "measurement": ["cpu_usage_active"],
         "metrics_collection_interval": 60
+      },
+      "statsd": {
+        "service_address": ":8125",
+        "metrics_aggregation_interval": 60
+      },
+      "collectd": {
+        "metrics_aggregation_interval": 60
       }
     }
   },
