@@ -93,7 +93,7 @@ provisioner "shell" {
 
 # Upload CloudWatch Agent configuration to a temporary location
 provisioner "file" {
-  content = <<EOF
+   content = <<EOF
 {
   "agent": {
     "metrics_collection_interval": 60,
@@ -103,7 +103,6 @@ provisioner "file" {
     "append_dimensions": {
       "InstanceId": "$${aws:InstanceId}"
     },
-    "aggregation_dimensions": [["InstanceId"]],
     "metrics_collected": {
       "mem": {
         "measurement": ["mem_used_percent"],
@@ -112,6 +111,13 @@ provisioner "file" {
       "cpu": {
         "measurement": ["cpu_usage_active"],
         "metrics_collection_interval": 60
+      },
+      "statsd": {
+        "service_address": ":8125",
+        "metrics_aggregation_interval": 60
+      },
+      "collectd": {
+        "metrics_aggregation_interval": 60
       }
     }
   },
@@ -131,7 +137,16 @@ provisioner "file" {
   }
 }
 EOF
-   destination = "/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json"
+    destination = "/tmp/amazon-cloudwatch-agent.json"
+}
+
+# Move the configuration file to the final location with sudo
+provisioner "shell" {
+  inline = [
+    "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/",
+    "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+    "echo 'CloudWatch Agent configuration moved to final directory.'"
+  ]
 }
 
   provisioner "shell" {
