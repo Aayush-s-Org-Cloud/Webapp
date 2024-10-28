@@ -29,7 +29,4 @@ sequelize.sync()
     .catch((error) => console.error('Database sync failed:', error));
 
 // Export the Sequelize instance and the timed query function
-module.exports = {
-    sequelize,
-    timedQuery, // Export the timed query function
-};
+module.exports = sequelize,timedQuery ;
