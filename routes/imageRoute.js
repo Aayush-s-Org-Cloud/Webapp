@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const authenticate = require('../middleware/authenticate');
-const imageController = require('../controllers/imageController');
+const imageController = require('../controller/imageController');
 const statsdClient = require('../statsd');   
 
 // Set up multer for image file handling

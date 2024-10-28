@@ -10,10 +10,7 @@ const sequelize = new Sequelize({
     username: process.env.DATA_USER,
     password: process.env.DATA_PASSWORD,
     database: process.env.DATA_DATABASE,
-    dialectOptions: {
-        charset: 'utf8mb4',
-        collate: 'utf8mb4_unicode_ci'
-    }
+     
 });
 
 // Wrap the query method to include timing metrics
