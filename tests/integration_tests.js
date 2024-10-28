@@ -3,6 +3,7 @@ const request = require('supertest');
 const app = require('../app');  
 const sequelize = require('../config/database');
 const User = require('../models/usermodel'); 
+const statsdClient = require('../statsd'); 
 beforeAll(async () => {
     await sequelize.sync({ force: true });  
   });
@@ -135,6 +136,8 @@ describe('User API', () => {
     });
         
     afterAll(async () => {
-        await sequelize.close();  // Close the database connection
-        statsdClient.close();     // Close StatsD connection if applicable
+        await sequelize.close();   
+        if (statsdClient && typeof statsdClient.close === 'function') {
+            statsdClient.close();  
+        }
     });
