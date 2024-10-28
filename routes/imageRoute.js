@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const router = express.Router();
-const authenticate = require('../middleware/authenticate');
+const authenticate = require('../middleware/authentication');
 const imageController = require('../controller/imageController');
 const statsdClient = require('../statsd');   
 
