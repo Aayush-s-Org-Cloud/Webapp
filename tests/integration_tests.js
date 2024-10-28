@@ -25,7 +25,7 @@ describe('User API', () => {
         };
 
         const response = await request(app)
-            .post('/v1/user')
+            .post('/v2/user')
             .send(userData)
             .expect('Content-Type', /json/)
             .expect(201);
@@ -51,7 +51,7 @@ describe('User API', () => {
 
             // update user
             await request(app)
-                .put('/v1/user/self')
+                .put('/v2/user/self')
                 .set('Authorization', authHeader)
                 .send({ first_name: "updated", last_name: "updatedlast" })
                 .expect(204);  
@@ -70,13 +70,13 @@ describe('User API', () => {
     
             // First user registration
             await request(app)
-                .post('/v1/user')
+                .post('/v2/user')
                 .send(userData)
                 .expect(201);
     
             // Second user registration with the same email 
             await request(app)
-                .post('/v1/user')
+                .post('/v2/user')
                 .send(userData)
                 .expect(409);  
         });
@@ -95,7 +95,7 @@ describe('User API', () => {
 
             // new user
             await request(app)
-                .post('/v1/user')
+                .post('/v2/user')
                 .send(userData)
                 .expect(201);
 
@@ -104,7 +104,7 @@ describe('User API', () => {
 
             // authenticate with wrong pass
             await request(app)
-                .get('/v1/user/self')
+                .get('/v2/user/self')
                 .set('Authorization', wrongAuthHeader)
                 .expect(401);   
         });
@@ -121,14 +121,14 @@ describe('User API', () => {
 
             // new user
             const response = await request(app)
-                .post('/v1/user')
+                .post('/v2/user')
                 .send(userData)
                 .expect(201);
             const authHeader = `Basic ${Buffer.from(`${userData.email}:${userData.password}`).toString('base64')}`;
 
             // Authenticate with correct id, pass
             await request(app)
-                .get('/v1/user/self')
+                .get('/v2/user/self')
                 .set('Authorization', authHeader)
                 .expect(200);   
         });

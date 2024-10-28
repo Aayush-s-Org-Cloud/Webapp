@@ -1,7 +1,7 @@
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-    return sequelize.define('Image', {
+    const Image = sequelize.define('Image', {
         id: {
             type: DataTypes.UUID,
             defaultValue: DataTypes.UUIDV4,
@@ -23,9 +23,16 @@ module.exports = (sequelize) => {
         },
         user_id: {
             type: DataTypes.UUID,
-            allowNull: false
+            allowNull: false,
+            references: {
+                model: 'User',  
+                key: 'id',  
+            }
         }
     }, {
-        tableName: 'Images'
+        tableName: 'Images',
+        freezeTableName: true
     });
+
+    return Image;
 };
