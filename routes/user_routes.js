@@ -1,9 +1,9 @@
 // user_routes.js
 const express = require('express');
 const router = express.Router();
-const statsdClient = require('../statsd'); // Import StatsD client
+const statsdClient = require('../statsd');  
 const userController = require('../controllers/usercontroller');
-const authenticate = require('../middleware/authentication'); // Authentication middleware
+const authenticate = require('../middleware/authentication');  
 
 // Track metrics and enforce JSON content type for the create user endpoint
 router.post('/v1/user', userController.enforceJsonContentType, async (req, res) => {
