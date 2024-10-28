@@ -5,8 +5,8 @@ const healthRoutes = require('./routes/health_checker_routes');
 const { handleNotFound } = require('./controller/healthcontroller');
 const userRoutes = require('./routes/user_routes');  
 
-app.use('/v1', express.json());
-app.use('/v1',userRoutes); 
+app.use('/', express.json());
+app.use('/',userRoutes); 
 app.use('/', healthRoutes);
 
 app.use((err, req, res, next) => {
