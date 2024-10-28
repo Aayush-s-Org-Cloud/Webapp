@@ -86,6 +86,7 @@ provisioner "shell" {
   inline = [
     "echo 'Installing CloudWatch Agent...'",
     "sudo apt-get update -y",
+    "sudo apt-get install -y collectd",
     "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
     "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb"
   ]
