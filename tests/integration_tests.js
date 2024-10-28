@@ -136,4 +136,5 @@ describe('User API', () => {
         
     afterAll(async () => {
         await sequelize.close();  // Close the database connection
+        statsdClient.close();     // Close StatsD connection if applicable
     });
