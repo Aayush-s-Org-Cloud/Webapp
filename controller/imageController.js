@@ -1,4 +1,4 @@
-const Image = require('../models/imagemodel');
+const { Image, User } = require('../models');
 const { uploadFileToS3, deleteFileFromS3 } = require('../services/s3Service');
 
 exports.uploadImage = async (req, res) => {
