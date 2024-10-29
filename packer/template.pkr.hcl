@@ -104,6 +104,7 @@ provisioner "file" {
     "append_dimensions": {
       "InstanceId": "$${aws:InstanceId}"
     },
+    "namespace": "MyAppMetrics",
     "metrics_collected": {
       "mem": {
         "measurement": ["mem_used_percent"],
@@ -115,6 +116,7 @@ provisioner "file" {
       },
       "statsd": {
         "service_address": ":8125",
+        "metrics_collection_interval": 15, 
         "metrics_aggregation_interval": 60
       },
       "collectd": {
