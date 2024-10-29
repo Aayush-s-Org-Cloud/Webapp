@@ -9,7 +9,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 // Route to upload a user's profile image
-router.post('/v1/user/self/pic', authenticate, upload.single('image'), imageController.uploadImage);
+router.post('/v1/user/self/pic', authenticate, upload.single('pic'), imageController.uploadImage);
 
 // Route to retrieve a user's profile image
 router.get('/v1/user/self/pic', authenticate, imageController.getImage);
