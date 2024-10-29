@@ -7,15 +7,17 @@ exports.uploadImage = async (req, res) => {
     }
     try {
         const { originalname, mimetype, buffer } = req.file;
-        const userId = req.user.id; 
+        const userId = req.user.id;  
+
+         
         const imageUrl = await uploadFileToS3({
-            file: buffer,
+            file: buffer,          
             fileName: originalname,
             userId: userId,
             mimeType: mimetype,
         });
 
-        // Save metadata in the database
+         
         const image = await Image.create({
             file_name: originalname,
             url: imageUrl,
@@ -23,7 +25,7 @@ exports.uploadImage = async (req, res) => {
             upload_date: new Date()
         });
 
-        // Return the saved image metadata as JSON response
+        
         res.status(201).json({
             file_name: image.file_name,
             id: image.id,
@@ -31,7 +33,6 @@ exports.uploadImage = async (req, res) => {
             upload_date: image.upload_date,
             user_id: image.user_id
         });
-        res.status(201).json(image);
     } catch (error) {
         res.status(500).json({ error: 'Failed to upload image', details: error.message });
     }
@@ -55,7 +56,7 @@ exports.deleteImage = async (req, res) => {
         if (!image) {
             return res.status(404).json({ message: 'Image not found' });
         }
-        // Use images/{user_id}/{file_name} for deleteFileFromS3 to locate and delete the image
+        
         const fileKey = `images/${req.user.id}/${image.file_name}`;
         await deleteFileFromS3(fileKey);   
         await image.destroy();
