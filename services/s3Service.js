@@ -22,7 +22,15 @@ async function deleteFileFromS3(fileKey) {
         Bucket: BUCKET_NAME,
         Key: fileKey,
     };
-    await s3.deleteObject(params).promise();
+
+    try {
+        console.log(`Attempting to delete file from S3 with key: ${fileKey}`);
+        await s3.deleteObject(params).promise();
+        console.log(`File deleted successfully from S3: ${fileKey}`);
+    } catch (error) {
+        console.error('Error deleting file from S3:', error);
+        throw new Error('File deletion from S3 failed');
+    }
 }
 
 module.exports = { uploadFileToS3, deleteFileFromS3 };
