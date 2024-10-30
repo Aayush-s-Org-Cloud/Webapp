@@ -1,6 +1,7 @@
 const { Image, User } = require('../models');
 const { uploadFileToS3, deleteFileFromS3 } = require('../services/s3Service');
 const logger = require('../logger'); // Ensure logger.js exists and is properly implemented
+const { UUIDV4 } = require('sequelize');
 
 exports.uploadImage = async (req, res) => {
     if (!req.file) {
@@ -10,17 +11,16 @@ exports.uploadImage = async (req, res) => {
 
     try {
         const { originalname, mimetype, buffer } = req.file;
-        const imageId = req.user.id;
-
+        const userId = req.user.id;
         // Check if the user already has an image
-        const existingImage = await Image.findOne({ where: { user_id: imageId } });
+        const existingImage = await Image.findOne({ where: { user_id: userId } });
         if (existingImage) {
             logger.info(`User ${userId} attempted to upload a second image`);
             return res.status(400).json({ message: 'Image already exists. Please delete the existing image before uploading a new one.' });
         }
 
         // Upload to S3
-        const uniqueFileName = `${Date.now()}_${originalname}`;
+        const uniqueFileName = `${uuid4()}_${originalname}`;
         const fileKey = `images/${userId}/${uniqueFileName}`;  // Define the S3 key
         const imageUrl = await uploadFileToS3({
             file: buffer,          
@@ -35,6 +35,7 @@ exports.uploadImage = async (req, res) => {
             file_name: originalname,
             key: fileKey,  // Store the S3 key
             url: imageUrl, 
+            user_id: userId,
             upload_date: new Date()
         });
 
@@ -67,10 +68,10 @@ exports.getImage = async (req, res) => {
 
         res.json({
             file_name: image.file_name,
-            id: image.id,
+            id: image.user_id,
             url: image.url,
             upload_date: image.upload_date,
-            user_id: image.id
+            user_id: image.user_id
         });
     } catch (error) {
         logger.error('Failed to retrieve image', { error: error.message });

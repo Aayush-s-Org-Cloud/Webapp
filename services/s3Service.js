@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 const logger = require('../logger'); 
+const { v4: uuidv4 } = require('uuid');
 const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 /**
  * Uploads file to S3.
@@ -8,7 +9,7 @@ const BUCKET_NAME = process.env.S3_BUCKET_NAME;
  * @returns {Promise<string>}  
  */
 async function uploadFileToS3({ file, fileName, userId, mimeType }) {    
-    const uniqueFileName = `${Date.now()}_${fileName}`;
+    const uniqueFileName = `${uuidv4()}_${fileName}`;
     const key = `images/${userId}/${uniqueFileName}`;  
 
     const params = {

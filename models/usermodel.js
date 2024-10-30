@@ -7,6 +7,7 @@ module.exports = (sequelize) => {
             defaultValue: DataTypes.UUIDV4,
             primaryKey: true,
             allowNull: false,
+            readOnly: true
         },
         email: {
             type: DataTypes.STRING,
@@ -29,11 +30,13 @@ module.exports = (sequelize) => {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false,
+            readOnly: true
         },
         accountUpdated: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false,
+            readOnly: true
         }
     }, {  
         tableName: 'User',  
