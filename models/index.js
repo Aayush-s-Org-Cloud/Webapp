@@ -5,15 +5,14 @@ const User = UserModel(sequelize);
 const Image = ImageModel(sequelize);
 
  
-Image.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
-User.hasMany(Image, { foreignKey: 'user_id', as: 'images' });
+Image.belongsTo(User, { foreignKey: 'id', as: 'user' });
+User.hasOne(Image, { foreignKey: 'id', as: 'image' });
 
  
 sequelize.sync()
     .then(() => console.log('Database synchronized'))
     .catch((error) => console.error('Database synchronization failed:', error));
 
- 
 module.exports = {
     sequelize,
     User,

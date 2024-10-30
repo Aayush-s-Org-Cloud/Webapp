@@ -134,7 +134,13 @@ provisioner "file" {
             "log_group_name": "amazon-cloudwatch-agent",
             "log_stream_name": "{instance_id}",
             "timestamp_format": "%b %d %H:%M:%S"
-          }
+          },
+          {
+          "file_path": "/var/log/application.log",
+          "log_group_name": "MyAppLogs",
+          "log_stream_name": "{instance_id}",
+          "timestamp_format": "YYYY-MM-DD HH:mm:ss"
+        }
         ]
       }
     }
