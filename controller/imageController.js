@@ -31,10 +31,10 @@ exports.uploadImage = async (req, res) => {
 
         // Create Image record with the S3 key
         const image = await Image.create({
+            id: userId,
             file_name: originalname,
             key: fileKey,  // Store the S3 key
-            url: imageUrl,
-            user_id: userId,
+            url: imageUrl, 
             upload_date: new Date()
         });
 
@@ -45,7 +45,7 @@ exports.uploadImage = async (req, res) => {
             id: image.id,
             url: image.url,
             upload_date: image.upload_date,
-            user_id: image.user_id
+            user_id: image.id
         });
     } catch (error) {
         logger.error('Failed to upload image', { error: error.message });
@@ -70,7 +70,7 @@ exports.getImage = async (req, res) => {
             id: image.id,
             url: image.url,
             upload_date: image.upload_date,
-            user_id: image.user_id
+            user_id: image.id
         });
     } catch (error) {
         logger.error('Failed to retrieve image', { error: error.message });
@@ -83,14 +83,10 @@ exports.deleteImage = async (req, res) => {
         const userId = req.user.id;
         const image = await Image.findOne({ where: { user_id: userId } });
         if (!image) {
-            logger.info(`User ${userId} attempted to delete a non-existent image`);
+            logger.info(`User ${userId} attempted to delete a non-exist image`);
             return res.status(404).json({ message: 'Image not found' });
-        }
-
-         
+        }  
         await deleteFileFromS3(image.key);
-
-         
         await image.destroy();
 
         logger.info(`Image deleted successfully for user ${userId}`, { imageId: image.id, key: image.key });

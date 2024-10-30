@@ -1,12 +1,16 @@
+// models/imagemodel.js
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
     const Image = sequelize.define('Image', {
         id: {
             type: DataTypes.UUID,
-            defaultValue: DataTypes.UUIDV4,
+            allowNull: false,
             primaryKey: true,
-            allowNull: false
+            references: {
+                model: 'User',  
+                key: 'id',  
+            },
         },
         file_name: {
             type: DataTypes.STRING,
@@ -24,15 +28,8 @@ module.exports = (sequelize) => {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false
-        },
-        user_id: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            references: {
-                model: 'User',  
-                key: 'id',  
-            }
         }
+         
     }, {
         tableName: 'Images',
         freezeTableName: true
