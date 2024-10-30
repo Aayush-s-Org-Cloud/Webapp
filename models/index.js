@@ -3,10 +3,8 @@ const UserModel = require('./usermodel');
 const ImageModel = require('./imagemodel');        
 const User = UserModel(sequelize);
 const Image = ImageModel(sequelize);
-
- 
-Image.belongsTo(User, { foreignKey: 'id', as: 'user' });
-User.hasOne(Image, { foreignKey: 'id', as: 'image' });
+User.hasOne(Image, { foreignKey: 'user_id', as: 'image', onDelete: 'CASCADE' }); 
+Image.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
  
 sequelize.sync()
