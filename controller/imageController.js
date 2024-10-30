@@ -1,7 +1,7 @@
 const { Image, User } = require('../models');
 const { uploadFileToS3, deleteFileFromS3 } = require('../services/s3Service');
 const logger = require('../logger'); // Ensure logger.js exists and is properly implemented
-const { UUIDV4 } = require('sequelize');
+const { v4: uuidv4 } = require('uuid');
 
 exports.uploadImage = async (req, res) => {
     if (!req.file) {
@@ -20,7 +20,8 @@ exports.uploadImage = async (req, res) => {
         }
 
         // Upload to S3
-        const uniqueFileName = `${uuid4()}_${originalname}`;
+
+        const uniqueFileName = `${uuidv4()}_${originalname}`;
         const fileKey = `images/${userId}/${uniqueFileName}`;  // Define the S3 key
         const imageUrl = await uploadFileToS3({
             file: buffer,          
