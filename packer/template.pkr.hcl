@@ -91,7 +91,7 @@ provisioner "shell" {
     "sudo touch /var/log/syslog",
     "sudo touch /var/log/application.log",
      "sudo chown csye6225:csye6225 /var/log/application.log", 
-      "sudo chown csye6225:csye6225 /var/log/syslog
+      "sudo chown csye6225:csye6225 /var/log/syslog"
   ]
 }
 
