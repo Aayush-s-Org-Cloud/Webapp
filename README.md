@@ -18,7 +18,7 @@ This is Cloud native Web Application which is build under node.js, Express.js, m
 
         ssh keygen
 
-3. connect to ubuntu VM using SSH command with your local machine 
+3. connect to ubuntu VM using SSH command with your local machine.
 
         ssh root@IPV4 address
 
