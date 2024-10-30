@@ -12,12 +12,13 @@ const logger = createLogger({
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     errors({ stack: true }),  
-    logFormat
+    customFormat
   ),
   transports: [
     new transports.Console(),
     new transports.File({ filename: '/var/log/myapp/application.log' })
   ],
+  exitOnError: false
 });
 
 module.exports = logger;
