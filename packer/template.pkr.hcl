@@ -87,7 +87,11 @@ provisioner "shell" {
     "echo 'Installing CloudWatch Agent...'",
     "sudo apt-get update -y",
     "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
-    "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb"
+    "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
+    "sudo touch /var/log/syslog",
+    "sudo touch /var/log/application.log",
+     "sudo chown csye6225:csye6225 /var/log/application.log", 
+      "sudo chown csye6225:csye6225 /var/log/syslog
   ]
 }
 
@@ -136,7 +140,7 @@ provisioner "file" {
             "timestamp_format": "%b %d %H:%M:%S"
           },
           {
-          "file_path": "/opt/nodeapp/logs/application.log",
+          "file_path": "/var/log/application.log",
           "log_group_name": "MyAppLogs",
           "log_stream_name": "{instance_id}",
           "timestamp_format": "YYYY-MM-DD HH:mm:ss"
