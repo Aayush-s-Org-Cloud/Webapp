@@ -10,10 +10,10 @@ exports.uploadImage = async (req, res) => {
 
     try {
         const { originalname, mimetype, buffer } = req.file;
-        const userId = req.user.id;
+        const imageId = req.user.id;
 
         // Check if the user already has an image
-        const existingImage = await Image.findOne({ where: { user_id: userId } });
+        const existingImage = await Image.findOne({ where: { user_id: imageId } });
         if (existingImage) {
             logger.info(`User ${userId} attempted to upload a second image`);
             return res.status(400).json({ message: 'Image already exists. Please delete the existing image before uploading a new one.' });
