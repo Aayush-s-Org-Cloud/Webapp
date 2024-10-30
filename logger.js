@@ -1,17 +1,23 @@
-// logger.js
-const logger = {
-    info: (message, ...args) => {
-        console.log(`INFO: ${message}`, ...args);
-    },
-    error: (message, ...args) => {
-        console.error(`ERROR: ${message}`, ...args);
-    },
-    warn: (message, ...args) => {
-        console.warn(`WARN: ${message}`, ...args);
-    },
-    debug: (message, ...args) => {
-        console.debug(`DEBUG: ${message}`, ...args);
-    },
-};
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, printf, errors } = format;
+
+// log format
+const customFormat = printf(({ level, message, timestamp, stack }) => {
+  return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
+});
+
+// Winston logger instance
+const logger = createLogger({
+  level: 'info', // Set the minimum log level
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    errors({ stack: true }),  
+    customFormat
+  ),
+  transports: [
+    new transports.Console(),
+    new transports.File({ filename: 'application.log' })
+  ],
+});
 
 module.exports = logger;

@@ -2,7 +2,7 @@
 const { Sequelize } = require('sequelize');
 const statsdClient = require('../statsd'); // Import StatsD client
 require('dotenv').config();
-
+ 
 const sequelize = new Sequelize({
     dialect: process.env.DATA_DIALECT,
     host: process.env.DATA_HOST,
