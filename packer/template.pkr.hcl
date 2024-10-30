@@ -88,10 +88,7 @@ provisioner "shell" {
     "sudo apt-get update -y",
     "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
     "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
-    "sudo touch /var/log/syslog",
-    "sudo touch /var/log/application.log",
-     "sudo chown csye6225:csye6225 /var/log/application.log", 
-      "sudo chown csye6225:csye6225 /var/log/syslog"
+     
   ]
 }
 
