@@ -136,7 +136,7 @@ provisioner "file" {
             "timestamp_format": "%b %d %H:%M:%S"
           },
           {
-          "file_path": "/var/log/myapp/application.log",
+          "file_path": "/var/log/application.log",
           "log_group_name": "MyAppLogs",
           "log_stream_name": "{instance_id}",
           "timestamp_format": "YYYY-MM-DD HH:mm:ss"

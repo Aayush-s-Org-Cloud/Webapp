@@ -16,7 +16,7 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console(),
-    new transports.File({ filename: '/var/log/myapp/application.log' })
+    new transports.File({ filename: '/var/log/application.log' })
   ],
   exitOnError: false
 });
