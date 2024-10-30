@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const statsdClient = require('../statsd'); // Import StatsD client
 const { healthCheck } = require('../controller/healthcontroller');
-
+const logger = require('./logger'); 
 // Health check route
 router.all('/healthz', async (req, res) => {
     // Count the number of times this health check API is called

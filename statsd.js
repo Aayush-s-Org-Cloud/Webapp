@@ -1,6 +1,6 @@
 // statsd.js
 const StatsD = require('node-statsd');
-const logger = require('./logger'); // Now, this module exists
+const logger = require('./logger');  
 
 const statsdClient = new StatsD({
     host: '127.0.0.1',
@@ -11,7 +11,7 @@ const statsdClient = new StatsD({
     }
 });
 
-// Optional: Confirm connection by sending a test metric
+ 
 statsdClient.increment('test.metric');
 logger.info('StatsD client initialized and test metric sent.');
 

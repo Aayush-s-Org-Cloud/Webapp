@@ -1,5 +1,6 @@
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
+const logger = require('../logger'); 
 const BUCKET_NAME = process.env.S3_BUCKET_NAME;
 
 async function uploadFileToS3({ file, fileName, userId, mimeType }) {    

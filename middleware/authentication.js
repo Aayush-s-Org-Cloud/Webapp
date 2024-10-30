@@ -1,6 +1,7 @@
 const sequelize = require('../config/database');   
 const initUserModel = require('../models/usermodel');
 const User = initUserModel(sequelize);
+const logger = require('../logger');
 const bcrypt = require('bcryptjs');
 const authenticate = async (req, res, next) => {
     const authHeader = req.headers['authorization'];
