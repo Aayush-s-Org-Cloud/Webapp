@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const userService = require('../services/user_service');
 const User = require('../models/usermodel'); 
-const logger = require('./logger'); 
 const validator = require('email-validator');
 //for creating user 
 const createUser = async (request, response) => {

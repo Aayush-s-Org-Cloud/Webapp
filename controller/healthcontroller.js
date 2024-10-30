@@ -1,5 +1,4 @@
-const sequelize = require('../config/database'); 
-const logger = require('./logger'); 
+const sequelize = require('../config/database');
 const healthCheck = async (req, res, next) => {
   //  headers 
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

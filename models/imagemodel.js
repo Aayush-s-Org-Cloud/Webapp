@@ -12,7 +12,7 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        key: {  // New Field to Store S3 Object Key
+        key: {   
             type: DataTypes.STRING,
             allowNull: false
         },
