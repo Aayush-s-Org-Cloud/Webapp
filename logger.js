@@ -1,25 +1,31 @@
-const { createLogger, format, transports } = require('winston');
-const { combine, timestamp, printf, errors } = format;
-const path = require('path');
-const fs = require('fs');
+const winston = require('winston');
 
-
-const customFormat = printf(({ level, message, timestamp, stack }) => {
-    return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
+// Custom JSON format for logging
+const customJSONFormat = winston.format.printf(({ level, message, timestamp, stack }) => {
+    return JSON.stringify({
+        timestamp: timestamp,
+        level: level,
+        severity: level.toUpperCase(),
+        message: message,
+        stack: stack || ''
+    });
 });
 
-const logger = createLogger({
-    level: 'info',  
-    format: combine(
-        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-        errors({ stack: true }),  
-        customFormat
+// Create the logger instance
+const logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.errors({ stack: true }),
+        customJSONFormat
     ),
     transports: [
-        new transports.Console(),
-        new transports.File({ filename: "/var/log/myapp/application.log" })
-    ],
-    exitOnError: false
+        new winston.transports.Console(),
+        new winston.transports.File({
+            filename: "/var/log/myapp/application.log",
+            level: 'info'
+        })
+    ]
 });
 
 module.exports = logger;

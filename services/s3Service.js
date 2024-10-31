@@ -1,8 +1,9 @@
+// services/s3Service.js
 const AWS = require('aws-sdk');
 const s3 = new AWS.S3();
 const logger = require('../logger'); 
-const { v4: uuidv4 } = require('uuid');
 const BUCKET_NAME = process.env.S3_BUCKET_NAME;
+
 AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
 
 /**
@@ -10,10 +11,7 @@ AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
  * @param {Object} params  
  * @returns {Promise<string>}  
  */
-async function uploadFileToS3({ file, fileName, userId, mimeType }) {    
-    const uniqueFileName = `${uuidv4()}_${fileName}`;
-    const key = `images/${userId}/${uniqueFileName}`;  
-
+async function uploadFileToS3({ file, key, mimeType }) {    
     const params = {
         Bucket: BUCKET_NAME,
         Key: key,
@@ -42,12 +40,11 @@ async function deleteFileFromS3(fileKey) {
     };
 
     try {
-        console.log(`Attempting to delete file from S3 with key: ${fileKey}`);
-         
+        logger.info(`Attempting to delete file from S3 with key: ${fileKey}`);
         await s3.deleteObject(params).promise();
-        console.log(`File deleted successfully from S3: ${fileKey}`);
+        logger.info(`File deleted successfully from S3: ${fileKey}`);
     } catch (error) {
-        console.error('Error deleting file from S3:', error);
+        logger.error('Error deleting file from S3', { error: error.message, stack: error.stack });
         throw new Error('File deletion from S3 failed');
     }
 }
