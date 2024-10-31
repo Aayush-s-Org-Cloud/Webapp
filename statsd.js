@@ -2,8 +2,8 @@ const StatsD = require('hot-shots');
 const logger = require('./logger');  
 
 const statsdClient = new StatsD({
-    host: '127.0.0.1',
-    port: 8125,
+    host: process.env.StatsD_HOST ||'127.0.0.1',
+    port: process.env.StatsD_PORT || 8125,
     prefix: 'myapp.',  
     errorHandler: function (error) {
         logger.error('StatsD Error:', error);
