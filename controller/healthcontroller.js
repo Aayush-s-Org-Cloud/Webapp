@@ -1,34 +1,46 @@
 const sequelize = require('../config/database');
+const logger = require('../logger');  
+
 const healthCheck = async (req, res, next) => {
-  //  headers 
+  // Set headers
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.setHeader('X-Content-Type-Options', 'nosniff');
+
   try {
-    // always checking database connection first for any request 
+    // Check database connection
     await sequelize.authenticate();
-    // no other than get method is allowed 
+    logger.info('Database connection successful');
+
+    // Only GET method is allowed
     if (req.method !== 'GET') {
-      return res.status(405).send();  
+      logger.warn('Non-GET method attempted on health check');
+      return res.status(405).send();
     }
-    // For GET requests checking any content header iof it is greater than 0 than its a payload 
+
+    // Check for unexpected content in GET requests
     if (req.headers['content-length'] && parseInt(req.headers['content-length']) > 0) {
-      return res.status(400).send();  
-    }
-    if (Object.keys(req.query).length !== 0) {
+      logger.warn('Content-length should be zero for GET requests in health check');
       return res.status(400).send();
-  }
-    //ifeverything is fine, return 200 OK
-    res.status(200).send(); 
+    }
+
+    if (Object.keys(req.query).length !== 0) {
+      logger.warn('Query parameters are not allowed in health check');
+      return res.status(400).send();
+    }
+
+    // If all checks pass, return 200 OK
+    res.status(200).send();
 
   } catch (error) {
-    console.error('Database connection error:', error.message);  
-    return res.status(503).send();  
+    logger.error('Database connection error during health check', { error: error.message });
+    return res.status(503).send();
   }
 };
-//unknown pages 
+
 const handleNotFound = (req, res) => {
+  logger.warn('404 Not Found error on request', { path: req.path });
   return res.status(404).json();
 };
 
