@@ -1,4 +1,5 @@
 // models/imagemodel.js
+const { validate } = require('email-validator');
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
@@ -27,7 +28,10 @@ module.exports = (sequelize) => {
         },
         url: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            validate:{
+                isUrl: true
+            }
         },
         upload_date: {
             type: DataTypes.DATE,
