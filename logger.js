@@ -1,14 +1,16 @@
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, printf, errors } = format;
 
-// log format
+const path = require('path');
+ 
 const customFormat = printf(({ level, message, timestamp, stack }) => {
   return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
 });
 
-// Winston logger instance
+
 const logger = createLogger({
-  level: 'info', // Set the minimum log level
+  level: 'info',  
+  level: 'info',  
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     errors({ stack: true }),  
@@ -16,6 +18,9 @@ const logger = createLogger({
   ),
   transports: [
     new transports.Console(),
-    new transports.File({ filename: 'application.log' })
+    new transports.File({ filename: '/var/log/application.log' })
   ],
+  exitOnError: false
 });
+
+module.exports = logger;

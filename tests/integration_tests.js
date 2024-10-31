@@ -4,12 +4,6 @@ const app = require('../app');
 const sequelize = require('../config/database');
 const User = require('../models/usermodel'); 
 const statsdClient = require('../statsd'); 
-jest.mock('winston-cloudwatch', () => {
-    return jest.fn().mockImplementation(() => ({
-      log: jest.fn(),  
-      end: jest.fn(),  
-    }));
-  });
 
 beforeAll(async () => {
     await sequelize.sync({ force: true });  
