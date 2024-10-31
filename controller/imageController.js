@@ -78,19 +78,6 @@ exports.getImage = async (req, res) => {
 };
 
 
-const validateRequest = (req, res, next) => {
-    if (Object.keys(req.query).length > 0) {
-        return res.status(400).json();
-    }
-
-    if (req.body && Object.keys(req.body).length > 0) {
-        return res.status(400).json();
-    }
-
-    next();
-};
-
-module.exports = validateRequest;
 exports.deleteImage = async (req, res) => {
     try {
         const userId = req.user.id;

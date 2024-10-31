@@ -3,6 +3,7 @@ const multer = require('multer');
 const router = express.Router();
 const statsdClient = require('../statsd');  
 const authenticate = require('../middleware/authentication');
+const validateRequest = require('../middleware/validate');
 const imageController = require('../controller/imageController');
 const logger = require('../logger'); 
 
