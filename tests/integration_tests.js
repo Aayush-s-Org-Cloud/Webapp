@@ -4,7 +4,27 @@ const app = require('../app');
 const sequelize = require('../config/database');
 const User = require('../models/usermodel'); 
 const statsdClient = require('../statsd'); 
+jest.mock('fs', () => ({
+    existsSync: jest.fn().mockReturnValue(true),
+    mkdirSync: jest.fn()
+}));
 
+jest.mock('winston', () => {
+    const mLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn() };
+    return {
+        createLogger: jest.fn(() => mLogger),
+        format: {
+            combine: jest.fn(),
+            timestamp: jest.fn(),
+            printf: jest.fn(),
+            errors: jest.fn()
+        },
+        transports: {
+            Console: jest.fn(),
+            File: jest.fn()
+        }
+    };
+});
 beforeAll(async () => {
     await sequelize.sync({ force: true });  
   });

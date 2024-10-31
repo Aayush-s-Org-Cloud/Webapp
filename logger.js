@@ -3,12 +3,6 @@ const { combine, timestamp, printf, errors } = format;
 const path = require('path');
 const fs = require('fs');
 
- 
-const logDirectory = '/var/log/myapp';
- 
-
- 
-const logFilePath = path.join(logDirectory, 'application.log');
 
 const customFormat = printf(({ level, message, timestamp, stack }) => {
     return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
@@ -23,7 +17,7 @@ const logger = createLogger({
     ),
     transports: [
         new transports.Console(),
-        new transports.File({ filename: logFilePath })
+        new transports.File({ filename: "/var/log/myapp/application.log" })
     ],
     exitOnError: false
 });
