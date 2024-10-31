@@ -1,31 +1,23 @@
-const winston = require('winston');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, printf, errors } = format;
 
-// Custom JSON format for logging
-const customJSONFormat = winston.format.printf(({ level, message, timestamp, stack }) => {
-    return JSON.stringify({
-        timestamp: timestamp,
-        level: level,
-        severity: level.toUpperCase(),
-        message: message,
-        stack: stack || ''
-    });
+// log format
+const customFormat = printf(({ level, message, timestamp, stack }) => {
+  return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
 });
 
-// Create the logger instance
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.errors({ stack: true }),
-        customJSONFormat
-    ),
-    transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({
-            filename: "/var/log/myapp/application.log",
-            level: 'info'
-        })
-    ]
+// Winston logger instance
+const logger = createLogger({
+  level: 'info', // Set the minimum log level
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    errors({ stack: true }),  
+    customFormat
+  ),
+  transports: [
+    new transports.Console(),
+    new transports.File({ filename: '/opt/nodeapp/logs/application.log' })
+  ],
 });
 
 module.exports = logger;

@@ -1,5 +1,4 @@
-// statsd.js
-const StatsD = require('node-statsd');
+const StatsD = require('hot-shots');
 const logger = require('./logger');  
 
 const statsdClient = new StatsD({

@@ -90,15 +90,7 @@ provisioner "shell" {
      
   ]
 }
-provisioner "shell" {
-  name    = "Create Log Directory and Set Permissions"
-  inline = [
-    "sudo mkdir -p /var/log/myapp",
-      "sudo chown ${var.ssh_username}:${var.ssh_username} /var/log/myapp",
-      "sudo chmod 755 /var/log/myapp",
-      "echo 'Log directory /var/log/myapp created and permissions set.'"
-  ]
-}
+
 provisioner "file" {
   content = <<EOF
 {
@@ -144,11 +136,12 @@ provisioner "file" {
             "timestamp_format": "%b %d %H:%M:%S"
           },
           {
-            "file_path": "/var/log/myapp/application.log",  # Updated log path
+            "file_path": "/opt/nodeapp/logs/application.log",  
             "log_group_name": "MyAppLogs",
             "log_stream_name": "{instance_id}",
             "timestamp_format": "YYYY-MM-DD HH:mm:ss"
           }
+          
         ]
       }
     }
