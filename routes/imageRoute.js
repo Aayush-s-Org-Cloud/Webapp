@@ -51,7 +51,9 @@ router.delete('/v1/user/self/pic', authenticate, async (req, res) => {
     const duration = Date.now() - start;
     statsdClient.timing('api.v1.user.self.pic.delete.duration', duration);
 });
-
+router.all('/v1/user/self/pic', (req, res) => {
+    res.status(405).json({ message: 'Method Not Allowed' });
+});
  
 router.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {

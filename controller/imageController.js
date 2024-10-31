@@ -1,6 +1,6 @@
 // controller/imageController.js
-const { Image } = require('../models');
-const { uploadFileToS3 } = require('../services/s3Service');
+const { Image, sequelize } = require('../models');
+const { uploadFileToS3 , deleteFileFromS3 } = require('../services/s3Service');
 const logger = require('../logger'); 
 const { v4: uuidv4 } = require('uuid');
 
@@ -76,28 +76,19 @@ exports.getImage = async (req, res) => {
         res.status(500).json({ error: 'Failed to retrieve image', details: error.message });
     }
 };
-
 exports.deleteImage = async (req, res) => {
-    const transaction = await sequelize.transaction();
     try {
         const userId = req.user.id;
-        const image = await Image.findOne({ where: { id: userId } }, { transaction });
+        const image = await Image.findOne({ where: { id: userId } });
         if (!image) {
-            logger.info(`User ${userId} attempted to delete a non-existent image`);
-            await transaction.rollback();
             return res.status(404).json({ message: 'Image not found' });
-        }  
+        }
 
         await deleteFileFromS3(image.key);
-        await image.destroy({ transaction });
-
-        await transaction.commit();
-
+        await image.destroy();
         logger.info(`Image deleted successfully for user ${userId}`, { imageId: image.id, key: image.key });
-
         res.status(204).send();
     } catch (error) {
-        await transaction.rollback();
         logger.error('Failed to delete image', { error: error.message, stack: error.stack });
         res.status(500).json({ error: 'Failed to delete image', details: error.message });
     }
