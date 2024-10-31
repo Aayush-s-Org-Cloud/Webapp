@@ -28,12 +28,12 @@ variable "subnet_id" {
 }
 variable "log_user" {
   type    = string
-  default = "csye6225"  
+  default = "root"  
 }
 
 variable "log_group" {
   type    = string
-  default = "csye6225"  
+  default = "root"  
 }
 source "amazon-ebs" "ubuntu" {
   region                      = var.aws_region
