@@ -1,5 +1,4 @@
 // models/imagemodel.js
-const { validate } = require('email-validator');
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
@@ -11,6 +10,12 @@ module.exports = (sequelize) => {
             validate: {
                 isUUID: 4  
             },
+            references: {
+                model: 'User',  
+                key: 'id',
+            },
+            onDelete: 'CASCADE',
+            onUpdate: 'CASCADE'
         },
         file_name: {
             type: DataTypes.STRING,
@@ -24,21 +29,12 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false
         },
-        user_id: {
-            type: DataTypes.UUID,
-            allowNull: false,
-            references: {
-                model: 'User',
-                key: 'id',
-            },
-        },
         upload_date: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false
         }
-    
-        }, 
+    }, 
     {
         tableName: 'Images',
         freezeTableName: true

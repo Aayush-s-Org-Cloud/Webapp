@@ -5,11 +5,7 @@ const fs = require('fs');
 
  
 const logDirectory = '/var/log/myapp';
-
-// Ensure log directory exists
-if (!fs.existsSync(logDirectory)) {
-    fs.mkdirSync(logDirectory, { recursive: true });
-}
+ 
 
  
 const logFilePath = path.join(logDirectory, 'application.log');
