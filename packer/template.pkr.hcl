@@ -103,10 +103,10 @@ provisioner "file" {
       "InstanceId": "$${aws:InstanceId}"
     },
     "namespace": "MyAppMetrics",
-    "metrics_collected": {
+    "metrics_statsd": {
       "statsd": {
         "service_address": ":8125",
-        "metrics_collection_interval": 15, 
+        "metrics_collection_interval": 5, 
         "metrics_aggregation_interval": 60
       },
       "mem": {
@@ -135,12 +135,7 @@ provisioner "file" {
             "log_stream_name": "{instance_id}",
             "timestamp_format": "%b %d %H:%M:%S"
           },
-          {
-            "file_path": "/opt/nodeapp/logs/application.log",  
-            "log_group_name": "MyAppLogs",
-            "log_stream_name": "{instance_id}",
-            "timestamp_format": "YYYY-MM-DD HH:mm:ss"
-          }
+          
           
         ]
       }
