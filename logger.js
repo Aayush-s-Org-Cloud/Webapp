@@ -1,22 +1,29 @@
 const { createLogger, format, transports } = require('winston');
+const CloudWatchTransport = require('winston-cloudwatch');
 const { combine, timestamp, printf, errors } = format;
-const path = require('path');
-// log format
+
+// Generate a unique log stream name (e.g., based on timestamp)
+const logStreamName = `application-log-stream-${Date.now()}`;
+
 const customFormat = printf(({ level, message, timestamp, stack }) => {
   return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
 });
 
-// Winston logger instance
 const logger = createLogger({
-  level: 'info',  
+  level: 'info',
   format: combine(
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    errors({ stack: true }),  
+    errors({ stack: true }),
     customFormat
   ),
   transports: [
     new transports.Console(),
-    new transports.File({ filename: '/var/logs/application.log' })
+    new CloudWatchTransport({
+      logGroupName: 'mystatsd',
+      logStreamName: logStreamName,
+      awsRegion: process.env.AWS_REGION || 'us-east-1',
+      jsonMessage: true,
+    })
   ],
   exitOnError: false
 });
