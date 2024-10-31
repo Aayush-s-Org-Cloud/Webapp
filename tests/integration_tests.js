@@ -135,9 +135,19 @@ describe('User API', () => {
         });
     });
         
+
+    // This function ensures that all logs are sent to CloudWatch before closing
+    function flushLogsAndCloseLogger() {
+        return new Promise((resolve, reject) => {
+            logger.on('finish', resolve);
+            logger.end();
+        });
+    }
+
     afterAll(async () => {
-        await sequelize.close();   
+        await flushLogsAndCloseLogger(); // Make sure to flush logs
+        await sequelize.close();
         if (statsdClient && typeof statsdClient.close === 'function') {
-            statsdClient.close();  
+            statsdClient.close();
         }
     });
