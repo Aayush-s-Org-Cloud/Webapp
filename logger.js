@@ -1,35 +1,21 @@
-const winston = require('winston');
-const WinstonCloudWatch = require('winston-cloudwatch');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, printf, errors } = format;
 
-// Create a Winston logger instance
-const logger = winston.createLogger({
-  level: 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.json()  
+// log format
+const customFormat = printf(({ level, message, timestamp, stack }) => {
+  return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
+});
+
+// Winston logger instance
+const logger = createLogger({
+  level: 'info', // Set the minimum log level
+  format: combine(
+    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    errors({ stack: true }),  
+    customFormat
   ),
   transports: [
-    // Console transport for development/testing
-    new winston.transports.Console(),
-
-    new winston.transports.File({ 
-      filename: '/opt/nodeapp/logs/application.log',
-      level: 'info'
-    }),
-
-    new WinstonCloudWatch({
-      logGroupName: process.env.CLOUDWATCH_LOG_GROUP || 'MyAppLogGroup',  
-      logStreamName: process.env.CLOUDWATCH_LOG_STREAM || 'MyAppLogStream',  
-      awsRegion: process.env.AWS_REGION || 'us-east-1', 
-      jsonMessage: true, 
-      messageFormatter: ({ level, message, additionalInfo }) => JSON.stringify({ level, message, ...additionalInfo })
-    })
+    new transports.Console(),
+    new transports.File({ filename: '/opt/nodeapp/logs/application.log' })
   ],
-  exitOnError: false
 });
- 
-logger.on('error', function(err) {
-  console.error('CloudWatch logging error:', err);
-});
-
-module.exports = logger;
