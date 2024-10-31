@@ -1,26 +1,35 @@
 const { createLogger, format, transports } = require('winston');
 const { combine, timestamp, printf, errors } = format;
-
 const path = require('path');
+const fs = require('fs');
+
  
+const logDirectory = '/var/log/myapp';
+
+// Ensure log directory exists
+if (!fs.existsSync(logDirectory)) {
+    fs.mkdirSync(logDirectory, { recursive: true });
+}
+
+ 
+const logFilePath = path.join(logDirectory, 'application.log');
+
 const customFormat = printf(({ level, message, timestamp, stack }) => {
-  return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
+    return `${timestamp} [${level.toUpperCase()}]: ${stack || message}`;
 });
 
-
 const logger = createLogger({
-  level: 'info',  
-  level: 'info',  
-  format: combine(
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    errors({ stack: true }),  
-    customFormat
-  ),
-  transports: [
-    new transports.Console(),
-    new transports.File({ filename: '/var/log/application.log' })
-  ],
-  exitOnError: false
+    level: 'info',  
+    format: combine(
+        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        errors({ stack: true }),  
+        customFormat
+    ),
+    transports: [
+        new transports.Console(),
+        new transports.File({ filename: logFilePath })
+    ],
+    exitOnError: false
 });
 
 module.exports = logger;

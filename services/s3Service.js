@@ -3,6 +3,7 @@ const s3 = new AWS.S3();
 const logger = require('../logger'); 
 const { v4: uuidv4 } = require('uuid');
 const BUCKET_NAME = process.env.S3_BUCKET_NAME;
+AWS.config.update({ region: process.env.AWS_REGION || 'us-east-1' });
 
 /**
  * Uploads file to S3.

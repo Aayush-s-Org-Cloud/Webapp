@@ -31,12 +31,13 @@ module.exports = (sequelize) => {
                 model: 'User',
                 key: 'id',
             },
+        },
         upload_date: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
             allowNull: false
         }
-    }
+    
         }, 
     {
         tableName: 'Images',
