@@ -1,7 +1,5 @@
-import winston from 'winston';
-import { format } from 'winston';
+const winston = require('winston');
 
-// Custom JSON format for logging
 const customJSONFormat = winston.format.printf(({ level, message, timestamp, stack }) => {
     return JSON.stringify({
         timestamp: timestamp,
@@ -12,7 +10,6 @@ const customJSONFormat = winston.format.printf(({ level, message, timestamp, sta
     });
 });
 
-// Create the logger instance
 const logger = winston.createLogger({
     level: 'info',  
     format: winston.format.combine(
@@ -31,4 +28,4 @@ const logger = winston.createLogger({
     ]
 });
 
-export default logger;
+module.exports = logger;
