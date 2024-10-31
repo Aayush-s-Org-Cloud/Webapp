@@ -1,5 +1,6 @@
 const winston = require('winston');
 
+// Custom JSON format for logging
 const customJSONFormat = winston.format.printf(({ level, message, timestamp, stack }) => {
     return JSON.stringify({
         timestamp: timestamp,
@@ -10,20 +11,21 @@ const customJSONFormat = winston.format.printf(({ level, message, timestamp, sta
     });
 });
 
+// Create the logger instance
 const logger = winston.createLogger({
-    level: 'info',  
+    level: 'info',
     format: winston.format.combine(
         winston.format.timestamp(),
-        winston.format.errors({ stack: true }),  
+        winston.format.errors({ stack: true }),
         customJSONFormat
     ),
     transports: [
         new winston.transports.Console({
-            format: winston.format.simple(),  
+            format: winston.format.simple()  // Ensure `simple()` is available in winston.format
         }),
         new winston.transports.File({
-            filename: "/var/log/myapp/application.log",  
-            level: 'info' 
+            filename: "/var/log/myapp/application.log",
+            level: 'info'
         })
     ]
 });
