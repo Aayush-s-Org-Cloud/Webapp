@@ -19,3 +19,5 @@ const logger = createLogger({
     new transports.File({ filename: '/opt/nodeapp/logs/application.log' })
   ],
 });
+
+module.exports = logger;
