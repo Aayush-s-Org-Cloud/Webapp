@@ -7,7 +7,7 @@ const statsdClient = require('../statsd');
 exports.uploadImage = async (req, res) => {
     if (!req.file) {
         logger.warn('No image uploaded');
-        return res.status(400).json({ message: 'No image uploaded' });
+        return res.status(400).json();
     }
     
     try {
@@ -18,7 +18,7 @@ exports.uploadImage = async (req, res) => {
         const existingImage = await Image.findOne({ where: { id: userId } });
         if (existingImage) {
             logger.info(`User ${userId} attempted to upload a second image`);
-            return res.status(400).json({ message: 'Image already exists. Please delete the existing image before uploading a new one.' });
+            return res.status(400).json();
         }
         
         // Upload to S3
@@ -49,7 +49,7 @@ exports.uploadImage = async (req, res) => {
         });
     } catch (error) {
         logger.error('Failed to upload image', { error: error.message, stack: error.stack });
-        res.status(500).json({ error: 'Failed to upload image', details: error.message });
+        res.status(500).json();
     }
 };
 exports.getImage = async (req, res) => {
@@ -59,7 +59,7 @@ exports.getImage = async (req, res) => {
 
         if (!image) {
             logger.info(`User ${userId} attempted to retrieve a non-existent image`);
-            return res.status(404).json({ message: 'Image not found' });
+            return res.status(404).json();
         }
 
         logger.info(`Image retrieved successfully for user ${userId}`, { imageId: image.id });
@@ -73,15 +73,30 @@ exports.getImage = async (req, res) => {
         });
     } catch (error) {
         logger.error('Failed to retrieve image', { error: error.message, stack: error.stack });
-        res.status(500).json({ error: 'Failed to retrieve image', details: error.message });
+        res.status(500).json();
     }
 };
+
+
+const validateRequest = (req, res, next) => {
+    if (Object.keys(req.query).length > 0) {
+        return res.status(400).json();
+    }
+
+    if (req.body && Object.keys(req.body).length > 0) {
+        return res.status(400).json();
+    }
+
+    next();
+};
+
+module.exports = validateRequest;
 exports.deleteImage = async (req, res) => {
     try {
         const userId = req.user.id;
         const image = await Image.findOne({ where: { id: userId } });
         if (!image) {
-            return res.status(404).json({ message: 'Image not found' });
+            return res.status(404).json();
         }
 
         await deleteFileFromS3(image.key);
@@ -90,6 +105,6 @@ exports.deleteImage = async (req, res) => {
         res.status(204).send();
     } catch (error) {
         logger.error('Failed to delete image', { error: error.message, stack: error.stack });
-        res.status(500).json({ error: 'Failed to delete image', details: error.message });
+        res.status(500).json();
     }
 };
