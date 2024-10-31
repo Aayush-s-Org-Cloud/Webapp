@@ -2,7 +2,7 @@ const { createLogger, format, transports } = require('winston');
 const CloudWatchTransport = require('winston-cloudwatch');
 const { combine, timestamp, printf, errors } = format;
 
-// Generate a unique log stream name (e.g., based on timestamp)
+ 
 const logStreamName = `application-log-stream-${Date.now()}`;
 
 const customFormat = printf(({ level, message, timestamp, stack }) => {
