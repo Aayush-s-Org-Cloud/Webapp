@@ -20,9 +20,7 @@ const logger = winston.createLogger({
         customJSONFormat
     ),
     transports: [
-        new winston.transports.Console({
-            format: winston.format.simple()  // Ensure `simple()` is available in winston.format
-        }),
+        new winston.transports.Console(),
         new winston.transports.File({
             filename: "/var/log/myapp/application.log",
             level: 'info'
