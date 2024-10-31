@@ -12,13 +12,11 @@ const logger = winston.createLogger({
     // Console transport for development/testing
     new winston.transports.Console(),
 
-    // File transport for local logging
     new winston.transports.File({ 
       filename: '/opt/nodeapp/logs/application.log',
       level: 'info'
     }),
 
-    // CloudWatch transport for AWS logging
     new WinstonCloudWatch({
       logGroupName: process.env.CLOUDWATCH_LOG_GROUP || 'MyAppLogGroup',  
       logStreamName: process.env.CLOUDWATCH_LOG_STREAM || 'MyAppLogStream',  
