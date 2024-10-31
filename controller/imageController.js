@@ -20,24 +20,20 @@ exports.uploadImage = async (req, res) => {
             logger.info(`User ${userId} attempted to upload a second image`);
             return res.status(400).json({ message: 'Image already exists. Please delete the existing image before uploading a new one.' });
         }
-
+        
         // Upload to S3
         const uniqueFileName = `${uuidv4()}_${originalname}`;
+        const fileKey = `images/${userId}/${uniqueFileName}`;
         const imageUrl = await uploadFileToS3({
             file: buffer,          
-            fileName: uniqueFileName,
-            userId: userId,
+            key: fileKey,
             mimeType: mimetype,
         });
-
-        // Define the S3 key
-        const fileKey = `images/${userId}/${uniqueFileName}`;
-
         // Create Image record with the same ID as userId
         const image = await Image.create({
             id: userId,          
             file_name: originalname,
-            key: fileKey,        // Store the S3 key
+            key: fileKey,         
             url: imageUrl, 
             upload_date: new Date()
         });
@@ -49,7 +45,7 @@ exports.uploadImage = async (req, res) => {
             id: image.id,
             url: image.url,
             upload_date: image.upload_date,
-            user_id: image.id  // Since Image.id == User.id
+            user_id: image.id   
         });
     } catch (error) {
         logger.error('Failed to upload image', { error: error.message, stack: error.stack });
