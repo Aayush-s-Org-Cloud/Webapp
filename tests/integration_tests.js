@@ -8,7 +8,22 @@ jest.mock('fs', () => ({
     existsSync: jest.fn().mockReturnValue(true),
     mkdirSync: jest.fn()
 }));
-
+jest.mock('@aws-sdk/client-s3', () => {
+    const actualS3 = jest.requireActual('@aws-sdk/client-s3');
+    return {
+        S3Client: jest.fn().mockImplementation(() => ({
+            send: jest.fn().mockImplementation((command) => {
+                if (command instanceof actualS3.PutObjectCommand) {
+                    return Promise.resolve({ Location: `https://example.com/${command.input.Key}` });
+                } else if (command instanceof actualS3.DeleteObjectCommand) {
+                    return Promise.resolve();
+                }
+            }),
+        })),
+        PutObjectCommand: actualS3.PutObjectCommand,
+        DeleteObjectCommand: actualS3.DeleteObjectCommand
+    };
+});
 jest.mock('winston', () => {
     const mLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn() };
     return {
