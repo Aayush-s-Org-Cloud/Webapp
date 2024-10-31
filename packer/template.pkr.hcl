@@ -26,15 +26,6 @@ variable "subnet_id" {
   type    = string
    
 }
-variable "log_user" {
-  type    = string
-  default = "root"  
-}
-
-variable "log_group" {
-  type    = string
-  default = "root"  
-}
 source "amazon-ebs" "ubuntu" {
   region                      = var.aws_region
   source_ami                  = var.source_ami
@@ -103,9 +94,9 @@ provisioner "shell" {
   name    = "Create Log Directory and Set Permissions"
   inline = [
     "sudo mkdir -p /var/log/myapp",
-    "sudo chown -R ${var.log_user}:${var.log_group} /var/log/myapp",
-    "sudo chmod -R 755 /var/log/myapp",
-    "echo 'Log directory /var/log/myapp created and permissions set.'"
+      "sudo chown ${var.ssh_username}:${var.ssh_username} /var/log/myapp",
+      "sudo chmod 755 /var/log/myapp",
+      "echo 'Log directory /var/log/myapp created and permissions set.'"
   ]
 }
 provisioner "file" {

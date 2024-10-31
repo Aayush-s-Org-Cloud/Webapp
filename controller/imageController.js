@@ -73,7 +73,7 @@ exports.getImage = async (req, res) => {
             id: image.id,
             url: image.url,
             upload_date: image.upload_date,
-            user_id: image.id  // Since Image.id == User.id
+            user_id: image.id   
         });
     } catch (error) {
         logger.error('Failed to retrieve image', { error: error.message, stack: error.stack });
