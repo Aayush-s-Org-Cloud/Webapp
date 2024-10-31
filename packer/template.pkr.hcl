@@ -26,7 +26,15 @@ variable "subnet_id" {
   type    = string
    
 }
- 
+variable "log_user" {
+  type    = string
+  default = "csye6225"  
+}
+
+variable "log_group" {
+  type    = string
+  default = "csye6225"  
+}
 source "amazon-ebs" "ubuntu" {
   region                      = var.aws_region
   source_ami                  = var.source_ami
@@ -87,10 +95,19 @@ provisioner "shell" {
     "echo 'Installing CloudWatch Agent...'",
     "sudo apt-get update -y",
     "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
-    "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb"
+    "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
+     
   ]
 }
-
+provisioner "shell" {
+  name    = "Create Log Directory and Set Permissions"
+  inline = [
+    "sudo mkdir -p /var/log/myapp",
+    "sudo chown -R ${var.log_user}:${var.log_group} /var/log/myapp",
+    "sudo chmod -R 755 /var/log/myapp",
+    "echo 'Log directory /var/log/myapp created and permissions set.'"
+  ]
+}
 provisioner "file" {
   content = <<EOF
 {
@@ -136,11 +153,11 @@ provisioner "file" {
             "timestamp_format": "%b %d %H:%M:%S"
           },
           {
-          "file_path": "/opt/nodeapp/logs/application.log",
-          "log_group_name": "MyAppLogs",
-          "log_stream_name": "{instance_id}",
-          "timestamp_format": "YYYY-MM-DD HH:mm:ss"
-        }
+            "file_path": "/var/log/myapp/application.log",  # Updated log path
+            "log_group_name": "MyAppLogs",
+            "log_stream_name": "{instance_id}",
+            "timestamp_format": "YYYY-MM-DD HH:mm:ss"
+          }
         ]
       }
     }
