@@ -52,15 +52,15 @@ source "amazon-ebs" "ubuntu" {
 build {
   name    = "nodejs-mysql-custom-ami"
   sources = ["source.amazon-ebs.ubuntu"]
-
+  provisioner "shell" {
+    script = "packer/create-user.sh"
+  }
   provisioner "file" {
     source      = "webapp.zip"
     destination = "/tmp/webapp.zip"
   }
 
-  provisioner "shell" {
-    script = "packer/create-user.sh"
-  }
+  
 
   # Unzip the application
   provisioner "shell" {
@@ -135,7 +135,12 @@ provisioner "file" {
             "log_stream_name": "{instance_id}",
             "timestamp_format": "%b %d %H:%M:%S"
           },
-          
+           {
+            "file_path": "/opt/nodeapp/logs/application.log",
+            "log_group_name": "MyAppLogs",
+            "log_stream_name": "{instance_id}",
+            "timestamp_format": "YYYY-MM-DD HH:mm:ss"
+          }
           
         ]
       }

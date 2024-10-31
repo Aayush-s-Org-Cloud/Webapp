@@ -3,13 +3,13 @@ const { Image, sequelize } = require('../models');
 const { uploadFileToS3 , deleteFileFromS3 } = require('../services/s3Service');
 const logger = require('../logger'); 
 const { v4: uuidv4 } = require('uuid');
-
+const statsdClient = require('../statsd');
 exports.uploadImage = async (req, res) => {
     if (!req.file) {
         logger.warn('No image uploaded');
         return res.status(400).json({ message: 'No image uploaded' });
     }
-
+    
     try {
         const { originalname, mimetype, buffer } = req.file;
         const userId = req.user.id;
@@ -35,7 +35,7 @@ exports.uploadImage = async (req, res) => {
             file_name: originalname,
             key: fileKey,         
             url: imageUrl, 
-            upload_date: new Date()
+            upload_date: Date.now()
         });
 
         logger.info(`Image uploaded successfully for user ${userId}`, { imageId: image.id, key: image.key });

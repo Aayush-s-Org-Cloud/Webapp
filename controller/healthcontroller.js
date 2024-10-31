@@ -1,34 +1,49 @@
 const sequelize = require('../config/database');
+const logger = require('../logger'); // Assuming logger is configured properly in the 'logger.js' file
+
 const healthCheck = async (req, res, next) => {
-  //  headers 
+  // Set headers for caching policies
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.setHeader('X-Content-Type-Options', 'nosniff');
+
   try {
-    // always checking database connection first for any request 
+    // Always check database connection first for any request
     await sequelize.authenticate();
-    // no other than get method is allowed 
+    logger.info('Database connection successful');
+
+    // No method other than GET is allowed
     if (req.method !== 'GET') {
-      return res.status(405).send();  
+      logger.info(`Method not allowed: ${req.method}`);
+      return res.status(405).send();
     }
-    // For GET requests checking any content header iof it is greater than 0 than its a payload 
+
+    // For GET requests checking if any content header is greater than 0 which indicates a payload
     if (req.headers['content-length'] && parseInt(req.headers['content-length']) > 0) {
-      return res.status(400).send();  
-    }
-    if (Object.keys(req.query).length !== 0) {
+      logger.info('Payload on GET request where none is expected');
       return res.status(400).send();
-  }
-    //ifeverything is fine, return 200 OK
-    res.status(200).send(); 
+    }
+
+    // Ensure no query parameters are allowed
+    if (Object.keys(req.query).length !== 0) {
+      logger.info('Query parameters not allowed in health check');
+      return res.status(400).send();
+    }
+
+    // If everything is fine, return 200 OK
+    res.status(200).send();
+    logger.info('Health check passed successfully');
 
   } catch (error) {
-    console.error('Database connection error:', error.message);  
-    return res.status(503).send();  
+    logger.error('Database connection error:', error.message);
+    return res.status(503).send();
   }
 };
-//unknown pages 
+
+// Handler for unknown pages
 const handleNotFound = (req, res) => {
+  logger.info(`Request made to unknown route: ${req.originalUrl}`);
   return res.status(404).json();
 };
 
