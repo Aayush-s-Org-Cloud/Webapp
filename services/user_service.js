@@ -14,7 +14,7 @@ const isExistingUser = async (email) => {
 const createUser = async (userData) => {
     const { email, first_name, last_name, password } = userData;
 
-    // if user already exists
+    
     const userExists = await isExistingUser(email);
     if (userExists) {
         throw new Error('User with this email already exists');
