@@ -103,7 +103,7 @@ provisioner "file" {
       "InstanceId": "$${aws:InstanceId}"
     },
     "namespace": "MyAppMetrics",
-    "metrics_statsd": {
+    "metrics_collected": {
       "statsd": {
         "service_address": ":8125",
         "metrics_collection_interval": 5, 
