@@ -61,4 +61,3 @@ This is Cloud native Web Application which is build under node.js, Express.js, m
         DATA_PASSWORD= YOUR_PASSWORD
         DATA_DATABASE= YOUR_DBNAME
 5. Start the Application with the defined EC2 instance ipv4 address. 
-## 
