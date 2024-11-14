@@ -25,7 +25,7 @@ EmailVerification.belongsTo(User, { foreignKey: 'userId' });
 User.hasOne(EmailVerification, { foreignKey: 'userId' });
 
 // Synchronize Models with Database
-sequelize.sync()
+sequelize.sync({ force: true })
     .then(() => console.log('Database synchronized'))
     .catch((error) => console.error('Database synchronization failed:', error));
 

@@ -1,10 +1,13 @@
+// tests/integration_tests.js
 
+// Set environment variables required for tests
 process.env.SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:123456789012:MyTopic';
 process.env.AWS_REGION = 'us-east-1';
 process.env.AWS_ACCESS_KEY_ID = 'fakeAccessKeyId';
 process.env.AWS_SECRET_ACCESS_KEY = 'fakeSecretAccessKey';
 process.env.S3_BUCKET_NAME = 'test-bucket';
- 
+
+// Import and configure AWSMock before requiring any AWS SDK-dependent modules
 const AWS = require('aws-sdk');
 const AWSMock = require('aws-sdk-mock');
 
@@ -180,6 +183,7 @@ describe('Authentication', () => {
     });
 });
     
+
 afterAll(async () => {
     AWSMock.restore('SNS');  
     AWSMock.restore('S3'); // Restore S3 mock
