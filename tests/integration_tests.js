@@ -1,20 +1,32 @@
-// Ensure the necessary modules are imported
-const request = require('supertest');
-const app = require('../app');  
-const sequelize = require('../config/database');
-const statsdClient = require('../statsd'); 
-const AWSMock = require('aws-sdk-mock');
+
+process.env.SNS_TOPIC_ARN = 'arn:aws:sns:us-east-1:123456789012:MyTopic';
+process.env.AWS_REGION = 'us-east-1';
+process.env.AWS_ACCESS_KEY_ID = 'fakeAccessKeyId';
+process.env.AWS_SECRET_ACCESS_KEY = 'fakeSecretAccessKey';
+process.env.S3_BUCKET_NAME = 'test-bucket';
+ 
 const AWS = require('aws-sdk');
+const AWSMock = require('aws-sdk-mock');
+
 AWSMock.setSDKInstance(AWS);
+
+// Mock SNS publish
 AWSMock.mock('SNS', 'publish', (params, callback) => {
     callback(null, { MessageId: 'mocked-message-id' });
 });
- 
+
+// Mock S3 upload (or other methods as used in your application)
+AWSMock.mock('S3', 'upload', (params, callback) => {
+    callback(null, { Location: 'http://example.com/test-image.jpg', Key: 'test-image.jpg' });
+});
+
+// Mock fs module
 jest.mock('fs', () => ({
     existsSync: jest.fn().mockReturnValue(true),
     mkdirSync: jest.fn()
 }));
- 
+
+// Mock winston logger
 jest.mock('winston', () => {
     const mLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn() };
     return {
@@ -32,40 +44,18 @@ jest.mock('winston', () => {
     };
 });
 
+// Now import the rest of your modules
+const request = require('supertest');
+const app = require('../app');  
+const { sequelize, User, EmailVerification, Image } = require('../models'); 
+const statsdClient = require('../statsd'); 
+
+// Sync database before running tests
 beforeAll(async () => {
     await sequelize.sync({ force: true });  
 });
 
- 
-jest.mock('fs', () => ({
-    existsSync: jest.fn().mockReturnValue(true),
-    mkdirSync: jest.fn()
-}));
- 
-jest.mock('winston', () => {
-    const mLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn() };
-    return {
-        createLogger: jest.fn(() => mLogger),
-        format: {
-            combine: jest.fn(),
-            timestamp: jest.fn(),
-            printf: jest.fn(),
-            errors: jest.fn()
-        },
-        transports: {
-            Console: jest.fn(),
-            File: jest.fn()
-        }
-    };
-});
-beforeAll(async () => {
-    await sequelize.sync({ force: true });  
-  });
-  
 describe('User API', () => {
-    let server;
-
-    
     let userId;
     let authHeader;
 
@@ -91,7 +81,7 @@ describe('User API', () => {
             return; 
         }
 
-        // user ID and authorization header for use in other test
+        // user ID and authorization header for use in other tests
         userId = response.body.id;
         authHeader = `Basic ${Buffer.from(`${userData.email}:${userData.password}`).toString('base64')}`;
     });
@@ -137,71 +127,64 @@ describe('User API', () => {
         });
     });
 });
-    describe('Authentication', () => {
-        it('reject auth with wrong password', async () => {
-            // Create a unique email for each user to avoid conflicts
-            const uniqueSuffix = Date.now();
-            const userData = {
-                email: `auth${uniqueSuffix}@yahoo.com`,
-                first_name: 'auth',
-                last_name: 'user',
-                password: 'Password@456'
-            };
 
-            // new user
-            await request(app)
-                .post('/v1/user')
-                .send(userData)
-                .expect(201);
+describe('Authentication', () => {
+    it('reject auth with wrong password', async () => {
+        // Create a unique email for each user to avoid conflicts
+        const uniqueSuffix = Date.now();
+        const userData = {
+            email: `auth${uniqueSuffix}@yahoo.com`,
+            first_name: 'auth',
+            last_name: 'user',
+            password: 'Password@456'
+        };
 
-            //correct email & wrong pass
-            const wrongAuthHeader = `Basic ${Buffer.from(`${userData.email}:wrongpassword`).toString('base64')}`;
+        // new user
+        await request(app)
+            .post('/v1/user')
+            .send(userData)
+            .expect(201);
 
-            // authenticate with wrong pass
-            await request(app)
-                .get('/v1/user/self')
-                .set('Authorization', wrongAuthHeader)
-                .expect(401);   
-        });
+        //correct email & wrong pass
+        const wrongAuthHeader = `Basic ${Buffer.from(`${userData.email}:wrongpassword`).toString('base64')}`;
 
-        it(' authenticate with correct username and pass', async () => {
-             
-            const uniqueSuffix = Date.now();
-            const userData = {
-                email: `correct${uniqueSuffix}@gmail.com`,
-                first_name: 'correct',
-                last_name: 'user',
-                password: 'Password@456'
-            };
-
-            // new user
-            const response = await request(app)
-                .post('/v1/user')
-                .send(userData)
-                .expect(201);
-            const authHeader = `Basic ${Buffer.from(`${userData.email}:${userData.password}`).toString('base64')}`;
-
-            // Authenticate with correct id, pass
-            await request(app)
-                .get('/v1/user/self')
-                .set('Authorization', authHeader)
-                .expect(200);   
-        });
+        // authenticate with wrong pass
+        await request(app)
+            .get('/v1/user/self')
+            .set('Authorization', wrongAuthHeader)
+            .expect(401);   
     });
+
+    it('authenticate with correct username and pass', async () => {
         
+        const uniqueSuffix = Date.now();
+        const userData = {
+            email: `correct${uniqueSuffix}@gmail.com`,
+            first_name: 'correct',
+            last_name: 'user',
+            password: 'Password@456'
+        };
 
-    afterAll(async () => {
-        await sequelize.close();   
-        if (statsdClient && typeof statsdClient.close === 'function') {
-            statsdClient.close();  
-        }
+        // new user
+        const response = await request(app)
+            .post('/v1/user')
+            .send(userData)
+            .expect(201);
+        const authHeader = `Basic ${Buffer.from(`${userData.email}:${userData.password}`).toString('base64')}`;
+
+        // Authenticate with correct id, pass
+        await request(app)
+            .get('/v1/user/self')
+            .set('Authorization', authHeader)
+            .expect(200);   
     });
-
-
-    afterAll(async () => {
-        AWSMock.restore('SNS');  
-        await sequelize.close();   
-        if (statsdClient && typeof statsdClient.close === 'function') {
-            statsdClient.close();  
-        }
-    });
+});
+    
+afterAll(async () => {
+    AWSMock.restore('SNS');  
+    AWSMock.restore('S3'); // Restore S3 mock
+    await sequelize.close();   
+    if (statsdClient && typeof statsdClient.close === 'function') {
+        statsdClient.close();  
+    }
+});

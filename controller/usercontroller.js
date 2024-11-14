@@ -1,17 +1,18 @@
 const bcrypt = require('bcryptjs');
 const userService = require('../services/user_service');
-const User = require('../models/usermodel'); 
+const { User, EmailVerification } = require('../models'); 
 const validator = require('email-validator');
 const logger = require('../logger');   
+const { v4: uuidv4 } = require('uuid');
 const AWS = require('aws-sdk');
 // Initialize SNS
 const sns = new AWS.SNS({
-    region: process.env.AWS_REGION || 'us-east-1', // Ensure AWS_REGION is set in environment variables
+    region: process.env.AWS_REGION || 'us-east-1',  
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 });
 
-const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN; // Ensure this is set in environment variables
+const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN;  
 
 // For creating user
 const createUser = async (request, response) => {
