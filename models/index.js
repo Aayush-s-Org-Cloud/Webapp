@@ -1,22 +1,28 @@
-// models/index.js
-const sequelize = require('../config/database');   
-const UserModel = require('./usermodel');          
+const sequelize = require('../config/database');  
+const UserModel = require('./usermodel');         
 const ImageModel = require('./imagemodel');        
+const EmailVerificationModel = require('./EmailVerification'); 
 
+// Initialize models
 const User = UserModel(sequelize);
 const Image = ImageModel(sequelize);
- 
+const EmailVerification = EmailVerificationModel(sequelize);
+
+// Define associations
 User.hasOne(Image, { 
-    foreignKey: 'id',   
+    foreignKey: 'userId',   
     as: 'image', 
     onDelete: 'CASCADE', 
     onUpdate: 'CASCADE'
 }); 
 
 Image.belongsTo(User, { 
-    foreignKey: 'id',  
+    foreignKey: 'userId',  
     as: 'user' 
 });
+
+EmailVerification.belongsTo(User, { foreignKey: 'userId' });
+User.hasOne(EmailVerification, { foreignKey: 'userId' });
 
 // Synchronize Models with Database
 sequelize.sync()
@@ -27,4 +33,5 @@ module.exports = {
     sequelize,
     User,
     Image,
+    EmailVerification,
 };
