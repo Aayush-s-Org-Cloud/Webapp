@@ -4,6 +4,40 @@ const app = require('../app');
 const sequelize = require('../config/database');
 const User = require('../models/usermodel'); 
 const statsdClient = require('../statsd'); 
+const AWSMock = require('aws-sdk-mock');
+const AWS = require('aws-sdk');
+AWSMock.setSDKInstance(AWS);
+AWSMock.mock('SNS', 'publish', (params, callback) => {
+    callback(null, { MessageId: 'mocked-message-id' });
+});
+
+jest.mock('fs', () => ({
+    existsSync: jest.fn().mockReturnValue(true),
+    mkdirSync: jest.fn()
+}));
+ 
+jest.mock('winston', () => {
+    const mLogger = { info: jest.fn(), error: jest.fn(), warn: jest.fn() };
+    return {
+        createLogger: jest.fn(() => mLogger),
+        format: {
+            combine: jest.fn(),
+            timestamp: jest.fn(),
+            printf: jest.fn(),
+            errors: jest.fn()
+        },
+        transports: {
+            Console: jest.fn(),
+            File: jest.fn()
+        }
+    };
+});
+
+beforeAll(async () => {
+    await sequelize.sync({ force: true });  
+});
+
+ 
 jest.mock('fs', () => ({
     existsSync: jest.fn().mockReturnValue(true),
     mkdirSync: jest.fn()
@@ -158,6 +192,15 @@ describe('User API', () => {
         
 
     afterAll(async () => {
+        await sequelize.close();   
+        if (statsdClient && typeof statsdClient.close === 'function') {
+            statsdClient.close();  
+        }
+    });
+
+
+    afterAll(async () => {
+        AWSMock.restore('SNS');  
         await sequelize.close();   
         if (statsdClient && typeof statsdClient.close === 'function') {
             statsdClient.close();  
