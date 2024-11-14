@@ -5,16 +5,11 @@ const sequelize = require('../config/database');
 const statsdClient = require('../statsd'); 
 const AWSMock = require('aws-sdk-mock');
 const AWS = require('aws-sdk');
-AWSMock.setSDKInstance(AWS);
-AWSMock.mock('SNS', 'publish', (params, callback) => {
-    callback(null, { MessageId: 'mocked-message-id' });
-});
-
 jest.mock('aws-sdk', () => {
     return {
       SNS: jest.fn(() => ({
         publish: jest.fn().mockReturnThis(),
-        promise: jest.fn()
+        promise: jest.fn().mockResolvedValue("Mocked SNS Response")
       }))
     };
   });
