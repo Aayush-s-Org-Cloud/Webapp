@@ -10,6 +10,14 @@ AWSMock.mock('SNS', 'publish', (params, callback) => {
     callback(null, { MessageId: 'mocked-message-id' });
 });
 
+jest.mock('aws-sdk', () => {
+    return {
+      SNS: jest.fn(() => ({
+        publish: jest.fn().mockReturnThis(),
+        promise: jest.fn()
+      }))
+    };
+  });
 jest.mock('fs', () => ({
     existsSync: jest.fn().mockReturnValue(true),
     mkdirSync: jest.fn()
