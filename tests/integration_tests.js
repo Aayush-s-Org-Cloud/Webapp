@@ -3,6 +3,7 @@ const request = require('supertest');
 const app = require('../app');  
 const sequelize = require('../config/database');
 const User = require('../models/usermodel'); 
+const {  EmailVerification } = require('../models/EmailVerification'); 
 const statsdClient = require('../statsd'); 
 const AWSMock = require('aws-sdk-mock');
 const AWS = require('aws-sdk');
