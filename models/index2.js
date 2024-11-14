@@ -12,7 +12,7 @@ const EmailVerification = EmailVerificationModel(sequelize);
 EmailVerification.belongsTo(User, { foreignKey: 'userId' });
 User.hasOne(EmailVerification, { foreignKey: 'userId' });
 
-// Export models and sequelize instance
+ 
 module.exports = {
     User,
     EmailVerification,
