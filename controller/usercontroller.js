@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const userService = require('../services/user_service');
 const User = require('../models/usermodel'); 
 const validator = require('email-validator');
-const logger = require('../logger');  
+const logger = require('../logger');   
 const AWS = require('aws-sdk');
 // Initialize SNS
 const sns = new AWS.SNS({
