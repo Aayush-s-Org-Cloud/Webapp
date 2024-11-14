@@ -5,6 +5,7 @@ const healthRoutes = require('./routes/health_checker_routes');
 const { handleNotFound } = require('./controller/healthcontroller');
 const userRoutes = require('./routes/user_routes');  
 const imageRoutes = require('./routes/imageRoute'); 
+const EmailVerification = require('./models/EmailVerification');
 app.use('/', express.json());
 app.use('/',userRoutes); 
 app.use('/', healthRoutes);
