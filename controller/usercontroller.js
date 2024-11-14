@@ -8,8 +8,7 @@ const AWS = require('aws-sdk');
 // Initialize SNS
 const sns = new AWS.SNS({
     region: process.env.AWS_REGION || 'us-east-1',  
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    
 });
 
 const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN;  
@@ -64,7 +63,7 @@ const createUser = async (request, response) => {
             userId: newUser.id,
             token: token,
             expiresAt: expiresAt,
-            emailSent: false, // Initially, email is not sent
+            emailSent: true,  
         });
 
         logger.info(`Verification token generated and stored for user ID: ${newUser.id}`);
@@ -75,9 +74,10 @@ const createUser = async (request, response) => {
             firstName: newUser.first_name,
             lastName: newUser.last_name,
             userId: newUser.id,
-            token: token, // Include token in the message
+            token: token, 
+            verificationLink: verificationLink,
         };
-
+        
         const params = {
             Message: JSON.stringify(snsMessage),
             TopicArn: SNS_TOPIC_ARN,
