@@ -62,7 +62,12 @@ jobs:
         DATA_PASSWORD: ${{ secrets.DATA_PASSWORD }}
         DATA_DATABASE: ${{ secrets.DATA_DATABASE }}
         DATA_PORT: ${{ secrets.DATA_PORT }}
-
+         
+        SNS_TOPIC_ARN: 'arn:aws:sns:us-east-1:123456789012:MyTopic'
+        AWS_REGION: 'us-east-1'
+        AWS_ACCESS_KEY_ID: 'fakeAccessKeyId'
+        AWS_SECRET_ACCESS_KEY: 'fakeSecretAccessKey'
+        S3_BUCKET_NAME: 'test-bucket'
     - name: Check MySQL logs if failed
       if: failure()
       run: docker logs $(docker ps -q --filter ancestor=mysql:8.0)

@@ -1,8 +1,19 @@
 const bcrypt = require('bcryptjs');
 const userService = require('../services/user_service');
-const User = require('../models/usermodel'); 
+const { User, EmailVerification } = require('../models'); 
 const validator = require('email-validator');
-const logger = require('../logger');  
+const logger = require('../logger');   
+const { v4: uuidv4 } = require('uuid');
+const AWS = require('aws-sdk');
+// Initialize SNS
+const sns = new AWS.SNS({
+    region: process.env.AWS_REGION || 'us-east-1',  
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+});
+
+const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN;  
+
 // For creating user
 const createUser = async (request, response) => {
     const listedfields = ['email', 'first_name', 'last_name', 'password'];
@@ -11,14 +22,14 @@ const createUser = async (request, response) => {
 
     if (nonlistedfield) {
         logger.info('Attempt to submit non-listed fields in createUser');
-        return response.status(400).json();
+        return response.status(400).json({ error: 'Invalid fields provided' });
     }
 
     const { email, first_name, last_name, password } = request.body;
 
     if (!email || !password || !first_name || !last_name) {
         logger.info('Missing required fields in createUser');
-        return response.status(400).json();
+        return response.status(400).json({ error: 'Missing required fields' });
     }
 
     if (!validator.validate(email)) {
@@ -26,21 +37,56 @@ const createUser = async (request, response) => {
         return response.status(422).json({ error: 'Invalid email format' });
     }
 
-    const first_last_vali = /^[a-z0-9]+$/;
-    if (!first_last_vali.test(first_name) || !first_last_vali.test(last_name)) {
+    const nameValidation = /^[a-zA-Z0-9]+$/;
+    if (!nameValidation.test(first_name) || !nameValidation.test(last_name)) {
         logger.info('First or last name validation failed in createUser');
-        return response.status(422).json();
+        return response.status(422).json({ error: 'Invalid name format' });
     }
 
-    const passwordcondi = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    if (!passwordcondi.test(password)) {
+    const passwordCondition = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!passwordCondition.test(password)) {
         logger.info('Password validation failed in createUser');
-        return response.status(422).json();
+        return response.status(422).json({ error: 'Password does not meet complexity requirements' });
     }
 
     try {
+        // Create the new user
         const newUser = await userService.createUser(request.body);
         logger.info(`New user created successfully: ${newUser.id}`);
+
+        // Generate verification token
+        const token = uuidv4();
+        const verificationLink = `demo.aayushpatel.ninja/verify?token=${token}&userId=${newUser.id}`;
+        const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
+
+        // Store verification token in the database
+        await EmailVerification.create({
+            userId: newUser.id,
+            token: token,
+            expiresAt: expiresAt,
+            emailSent: false, // Initially, email is not sent
+        });
+
+        logger.info(`Verification token generated and stored for user ID: ${newUser.id}`);
+
+        // Publish message to SNS
+        const snsMessage = {
+            email: newUser.email,
+            firstName: newUser.first_name,
+            lastName: newUser.last_name,
+            userId: newUser.id,
+            token: token, // Include token in the message
+        };
+
+        const params = {
+            Message: JSON.stringify(snsMessage),
+            TopicArn: SNS_TOPIC_ARN,
+        };
+
+        await sns.publish(params).promise();
+        logger.info(`Published verification message to SNS for user ID: ${newUser.id}`);
+
+        // Respond to the client
         response.setHeader('Cache-Control', 'no-cache');
         response.status(201).json({
             id: newUser.id,
@@ -53,7 +99,7 @@ const createUser = async (request, response) => {
     } catch (error) {
         logger.error("Failed to create new user", { error: error.message });
         if (error.message === 'User with this email already exists') {
-            return response.status(409).json();
+            return response.status(409).json({ error: 'User with this email already exists' });
         }
         response.status(500).json({ error: 'Internal server error', details: error.message });
     }

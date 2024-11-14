@@ -4,7 +4,7 @@ const router = express.Router();
 const statsdClient = require('../statsd');  
 const userController = require('../controller/usercontroller');
 const authenticate = require('../middleware/authentication');  
- 
+const verifyEmail = require('../controller/verify');
 // Track metrics and enforce JSON content type for the create user endpoint
 router.post('/v1/user', userController.enforceJsonContentType, async (req, res) => {
     statsdClient.increment('api.v1.user.create.count');
@@ -15,7 +15,7 @@ router.post('/v1/user', userController.enforceJsonContentType, async (req, res) 
     const duration = Date.now() - start;
     statsdClient.timing('api.v1.user.create.duration', duration);
 });
-
+router.get('/verify', verifyEmail);
 // Track metrics, enforce JSON content type, and authentication for updating user info
 router.put('/v1/user/self', authenticate, userController.enforceJsonContentType, async (req, res) => {
     statsdClient.increment('api.v1.user.update.count');
