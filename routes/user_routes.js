@@ -5,7 +5,6 @@ const statsdClient = require('../statsd');
 const userController = require('../controller/usercontroller');
 const authenticate = require('../middleware/authentication');  
 const verifyEmail = require('../controller/verify');
-// Track metrics and enforce JSON content type for the create user endpoint
 router.post('/v1/user', express.json(), userController.enforceJsonContentType, async (req, res) => {
     statsdClient.increment('api.v1.user.create.count');
     const start = Date.now();
@@ -15,8 +14,8 @@ router.post('/v1/user', express.json(), userController.enforceJsonContentType, a
     const duration = Date.now() - start;
     statsdClient.timing('api.v1.user.create.duration', duration);
 });
-router.get('/verify', verifyEmail);
-// Track metrics, enforce JSON content type, and authentication for updating user info
+router.get('/v1/user/verify', verifyEmail);
+
 router.put('/v1/user/self', express.json(), authenticate, userController.enforceJsonContentType, async (req, res) => {
     statsdClient.increment('api.v1.user.update.count');
     const start = Date.now();
@@ -26,8 +25,7 @@ router.put('/v1/user/self', express.json(), authenticate, userController.enforce
     const duration = Date.now() - start;
     statsdClient.timing('api.v1.user.update.duration', duration);
 });
-
-// Track metrics and authenticate for retrieving user info
+ 
 router.get('/v1/user/self', express.json(), authenticate, async (req, res) => {
     statsdClient.increment('api.v1.user.get.count');
     const start = Date.now();
@@ -37,8 +35,7 @@ router.get('/v1/user/self', express.json(), authenticate, async (req, res) => {
     const duration = Date.now() - start;
     statsdClient.timing('api.v1.user.get.duration', duration);
 });
-
-// Handle unsupported methods for user endpoints
+ 
 router.all('/v1/user', (req, res) => {
     res.status(405).send({ error: 'Method Not Allowed' });
 });

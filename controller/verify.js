@@ -1,47 +1,48 @@
-// verify.js
-
-const User = require('../models/usermodel');
-const EmailVerification = require('../models/EmailVerification');
+const { User } = require('../models'); // Import only the User model
 const logger = require('../logger');
 
 const verifyEmail = async (req, res) => {
-    const { token, userId } = req.query;
+    const { token, email } = req.query;
 
-    if (!token || !userId) {
-        logger.info('Missing token or userId in email verification');
+    if (!token || !email) {
+        logger.info('Missing token or email in email verification');
         return res.status(400).send('Invalid verification link.');
     }
+    const userEmail = email.toLowerCase();
 
     try {
-        // Find the verification record
-        const verificationRecord = await EmailVerification.findOne({ where: { userId: userId, token: token } });
+        // Find the user by email
+        const user = await User.findOne({ where: { email: userEmail } });
+        logger.info(`Verification attempt for email: ${userEmail}`);
 
-        if (!verificationRecord) {
-            logger.info(`No verification record found for user ID: ${userId} with token: ${token}`);
+        if (!user) {
+            logger.info(`User not found for email: ${userEmail}`);
             return res.status(400).send('Invalid or expired verification link.');
         }
 
-        if (new Date() > verificationRecord.expiresAt) {
-            logger.info(`Verification token expired for user ID: ${userId}`);
+        // Check if the token matches
+        if (user.verificationToken !== token) {
+            logger.info(`Invalid verification token for email: ${userEmail}`);
+            return res.status(400).send('Invalid or expired verification link.');
+        }
+
+        // Check if the token has expired
+        if (new Date() > user.verificationTokenExpiresAt) {
+            logger.info(`Verification token expired for email: ${userEmail}`);
             return res.status(400).send('Verification link has expired.');
         }
 
         // Update user's verification status
-        const user = await User.findByPk(userId);
-        if (!user) {
-            logger.info(`User not found for ID: ${userId}`);
-            return res.status(400).send('User does not exist.');
-        }
-
-        user.isEmailVerified = true; // Ensure your User model has this field
+        user.isEmailVerified = true;
+        user.verificationToken = null; // Clear the token
+        user.verificationTokenExpiresAt = null; // Clear the expiration
         await user.save();
 
-        
-
-        logger.info(`User email verified successfully: ${userId}`);
+        logger.info(`User email verified successfully: ${userEmail}`);
         return res.status(200).send('Email verified successfully.');
     } catch (error) {
-        logger.error('Error during email verification', { error: error.message });
+        logger.error('Error during email verification', { message: error.message, stack: error.stack });
+        console.error('Error during email verification:', error);
         return res.status(500).send('Internal server error.');
     }
 };

@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const userService = require('../services/user_service');
-const { User, EmailVerification } = require('../models'); 
+const { User } = require('../models'); 
 const validator = require('email-validator');
 const logger = require('../logger');   
 const { v4: uuidv4 } = require('uuid');
@@ -13,6 +13,7 @@ const sns = new AWS.SNS({
 
 const SNS_TOPIC_ARN = process.env.SNS_TOPIC_ARN;  
 
+ 
 // For creating user
 const createUser = async (request, response) => {
     const listedfields = ['email', 'first_name', 'last_name', 'password'];
@@ -50,21 +51,24 @@ const createUser = async (request, response) => {
 
     try {
         // Create the new user
-        const newUser = await userService.createUser(request.body);
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({
+            email: email.toLowerCase(),
+            first_name,
+            last_name,
+            password: hashedPassword,
+        });
         logger.info(`New user created successfully: ${newUser.id}`);
 
         // Generate verification token
         const token = uuidv4();
-        const verificationLink = `http://demo.aayushpatel.ninja/verify?token=${token}&userId=${newUser.id}`;
+        const verificationLink = `http://demo.aayushpatel.ninja/verify?token=${encodeURIComponent(token)}&email=${encodeURIComponent(newUser.email)}`;
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
-        // Store verification token in the database
-        await EmailVerification.create({
-            userId: newUser.id,
-            token: token,
-            expiresAt: expiresAt,
-            emailSent: true,  
-        });
+        // Update the user with verification token and expiration
+        newUser.verificationToken = token;
+        newUser.verificationTokenExpiresAt = expiresAt;
+        await newUser.save();
 
         logger.info(`Verification token generated and stored for user ID: ${newUser.id}`);
 
@@ -73,7 +77,6 @@ const createUser = async (request, response) => {
             email: newUser.email,
             firstName: newUser.first_name,
             lastName: newUser.last_name,
-            userId: newUser.id,
             token: token, 
             verificationLink: verificationLink,
         };
@@ -104,7 +107,6 @@ const createUser = async (request, response) => {
         response.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
-
 // For updating user
 const updateUser = async (req, res) => {
     const { first_name, last_name, password } = req.body;

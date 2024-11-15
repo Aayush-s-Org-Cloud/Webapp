@@ -26,11 +26,21 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        isEmailVerified: { // Ensure this field exists
+        isEmailVerified: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
             allowNull: false,
             field: 'is_email_verified',
+        },
+        verificationToken: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            field: 'verification_token',
+        },
+        verificationTokenExpiresAt: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            field: 'verification_token_expires_at',
         },
         accountCreated: {
             type: DataTypes.DATE,
