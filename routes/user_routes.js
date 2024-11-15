@@ -6,7 +6,7 @@ const userController = require('../controller/usercontroller');
 const authenticate = require('../middleware/authentication');  
 const verifyEmail = require('../controller/verify');
 // Track metrics and enforce JSON content type for the create user endpoint
-router.post('/v1/user', userController.enforceJsonContentType, async (req, res) => {
+router.post('/v1/user', express.json(), userController.enforceJsonContentType, async (req, res) => {
     statsdClient.increment('api.v1.user.create.count');
     const start = Date.now();
 
@@ -17,7 +17,7 @@ router.post('/v1/user', userController.enforceJsonContentType, async (req, res) 
 });
 router.get('/verify', verifyEmail);
 // Track metrics, enforce JSON content type, and authentication for updating user info
-router.put('/v1/user/self', authenticate, userController.enforceJsonContentType, async (req, res) => {
+router.put('/v1/user/self', express.json(), authenticate, userController.enforceJsonContentType, async (req, res) => {
     statsdClient.increment('api.v1.user.update.count');
     const start = Date.now();
 
@@ -28,7 +28,7 @@ router.put('/v1/user/self', authenticate, userController.enforceJsonContentType,
 });
 
 // Track metrics and authenticate for retrieving user info
-router.get('/v1/user/self', authenticate, async (req, res) => {
+router.get('/v1/user/self', express.json(), authenticate, async (req, res) => {
     statsdClient.increment('api.v1.user.get.count');
     const start = Date.now();
 

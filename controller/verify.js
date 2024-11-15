@@ -33,7 +33,7 @@ const verifyEmail = async (req, res) => {
             return res.status(400).send('User does not exist.');
         }
 
-       // user.isEmailVerified = true; // Ensure your User model has this field
+        user.isEmailVerified = true; // Ensure your User model has this field
         await user.save();
 
         
