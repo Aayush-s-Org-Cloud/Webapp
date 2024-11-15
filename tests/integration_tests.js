@@ -50,8 +50,8 @@ jest.mock('winston', () => {
 // Now import the rest of your modules
 const request = require('supertest');
 const app = require('../app');  
-const { sequelize, User, EmailVerification, Image } = require('../models'); 
-const statsdClient = require('../statsd'); 
+const { sequelize, User, Image } = require('../models'); 
+const statsdClient = require('../statsd'); // Adjust the path as necessary
 
 // Sync database before running tests
 beforeAll(async () => {
@@ -63,7 +63,6 @@ describe('User API', () => {
     let authHeader;
 
     it('create new user', async () => {
-        // a unique email to avoid conflicts
         const uniqueSuffix = Date.now();
         const userData = {
             email: `testing${uniqueSuffix}@gmail.com`,
@@ -87,6 +86,16 @@ describe('User API', () => {
         // user ID and authorization header for use in other tests
         userId = response.body.id;
         authHeader = `Basic ${Buffer.from(`${userData.email}:${userData.password}`).toString('base64')}`;
+
+        // Retrieve the verification token from the database
+        const user = await User.findOne({ where: { email: userData.email.toLowerCase() } });
+        const verificationToken = user.verificationToken;
+
+        // Perform email verification
+        await request(app)
+            .get('/v1/user/verify')
+            .query({ token: verificationToken, email: userData.email })
+            .expect(200);
     });
 
     describe('Update User', () => {
@@ -148,6 +157,16 @@ describe('Authentication', () => {
             .send(userData)
             .expect(201);
 
+        // Retrieve the verification token from the database
+        const user = await User.findOne({ where: { email: userData.email.toLowerCase() } });
+        const verificationToken = user.verificationToken;
+
+        // Perform email verification
+        await request(app)
+            .get('/v1/user/verify')
+            .query({ token: verificationToken, email: userData.email })
+            .expect(200);
+
         //correct email & wrong pass
         const wrongAuthHeader = `Basic ${Buffer.from(`${userData.email}:wrongpassword`).toString('base64')}`;
 
@@ -173,16 +192,27 @@ describe('Authentication', () => {
             .post('/v1/user')
             .send(userData)
             .expect(201);
+        
         const authHeader = `Basic ${Buffer.from(`${userData.email}:${userData.password}`).toString('base64')}`;
 
-        // Authenticate with correct id, pass
+        // Retrieve the verification token from the database
+        const user = await User.findOne({ where: { email: userData.email.toLowerCase() } });
+        const verificationToken = user.verificationToken;
+
+        // Perform email verification
+        await request(app)
+            .get('/v1/user/verify')
+            .query({ token: verificationToken, email: userData.email })
+            .expect(200);
+
+        // Authenticate with correct credentials
         await request(app)
             .get('/v1/user/self')
             .set('Authorization', authHeader)
             .expect(200);   
     });
 });
-    
+
 
 afterAll(async () => {
     AWSMock.restore('SNS');  

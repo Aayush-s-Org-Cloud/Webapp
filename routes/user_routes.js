@@ -15,7 +15,7 @@ router.post('/v1/user', express.json(), userController.enforceJsonContentType, a
     const duration = Date.now() - start;
     statsdClient.timing('api.v1.user.create.duration', duration);
 });
-router.get('/verify', verifyEmail);
+router.get('/v1/user/verify', verifyEmail);
 // Track metrics, enforce JSON content type, and authentication for updating user info
 router.put('/v1/user/self', express.json(), authenticate, userController.enforceJsonContentType, async (req, res) => {
     statsdClient.increment('api.v1.user.update.count');
