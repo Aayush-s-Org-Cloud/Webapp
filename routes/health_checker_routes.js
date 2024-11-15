@@ -3,7 +3,7 @@ const router = express.Router();
 const statsdClient = require('../statsd'); 
 const { healthCheck } = require('../controller/healthcontroller');
 // Health check route
-router.all('/healthz', async (req, res) => {
+router.all('/healthz', express.json(), async (req, res) => {
     //number of times this health check API is called
     statsdClient.increment('api.healthz.check.count');
     

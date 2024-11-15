@@ -24,7 +24,7 @@ const upload = multer({
 });
 
  
-router.post('/v1/user/self/pic', authenticate, upload.single('pic'), async (req, res) => {
+router.post('/v1/user/self/pic', express.json(), authenticate, upload.single('pic'), async (req, res) => {
     statsdClient.increment('api.v1.user.self.pic.upload.count');
     const start = Date.now();
     if (Object.keys(req.query).length > 0) {
@@ -49,7 +49,7 @@ router.post('/v1/user/self/pic', authenticate, upload.single('pic'), async (req,
 });
 
  
-router.get('/v1/user/self/pic', authenticate, validateRequest, async (req, res) => {
+router.get('/v1/user/self/pic', express.json(), authenticate, validateRequest, async (req, res) => {
     statsdClient.increment('api.v1.user.self.pic.get.count');
     const start = Date.now();
 
@@ -60,7 +60,7 @@ router.get('/v1/user/self/pic', authenticate, validateRequest, async (req, res) 
 });
 
 
-router.delete('/v1/user/self/pic', authenticate,validateRequest, async (req, res) => {
+router.delete('/v1/user/self/pic', express.json(), authenticate,validateRequest, async (req, res) => {
     statsdClient.increment('api.v1.user.self.pic.delete.count');
     const start = Date.now();
 
