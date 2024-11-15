@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const userService = require('../services/user_service');
-const { User, EmailVerification } = require('../models'); 
+const { User } = require('../models'); 
 const validator = require('email-validator');
 const logger = require('../logger');   
 const { v4: uuidv4 } = require('uuid');
@@ -49,22 +49,27 @@ const createUser = async (request, response) => {
     }
 
     try {
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         // Create the new user
-        const newUser = await userService.createUser(request.body);
+        const newUser = await User.create({
+            email: email.toLowerCase(),
+            first_name,
+            last_name,
+            password: hashedPassword,
+        });
         logger.info(`New user created successfully: ${newUser.id}`);
 
         // Generate verification token
         const token = uuidv4();
-        const verificationLink = `http://demo.aayushpatel.ninja/verify?token=${token}&userId=${newUser.id}`;
+        const verificationLink = `http://demo.aayushpatel.ninja/verify?token=${encodeURIComponent(token)}&userId=${newUser.id}`;
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
-        // Store verification token in the database
-        await EmailVerification.create({
-            userId: newUser.id,
-            token: token,
-            expiresAt: expiresAt,
-            emailSent: true,  
-        });
+        // Update the user with verification token and expiration
+        newUser.verificationToken = token;
+        newUser.verificationTokenExpiresAt = expiresAt;
+        await newUser.save();
 
         logger.info(`Verification token generated and stored for user ID: ${newUser.id}`);
 
@@ -98,7 +103,7 @@ const createUser = async (request, response) => {
         });
     } catch (error) {
         logger.error("Failed to create new user", { error: error.message });
-        if (error.message === 'User with this email already exists') {
+        if (error.name === 'SequelizeUniqueConstraintError') {
             return response.status(409).json({ error: 'User with this email already exists' });
         }
         response.status(500).json({ error: 'Internal server error', details: error.message });

@@ -26,11 +26,21 @@ module.exports = (sequelize) => {
             type: DataTypes.STRING,
             allowNull: false,
         },
-        isEmailVerified: { // Ensure this field exists
+        verified: {   
             type: DataTypes.BOOLEAN,
             defaultValue: false,
             allowNull: false,
-            field: 'is_email_verified',
+            field: 'verified',
+        },
+        verificationToken: {  
+            type: DataTypes.STRING,
+            allowNull: true,
+            field: 'verification_token',
+        },
+        verificationTokenExpiresAt: {  
+            type: DataTypes.DATE,
+            allowNull: true,
+            field: 'verification_token_expires_at',
         },
         accountCreated: {
             type: DataTypes.DATE,
@@ -46,7 +56,8 @@ module.exports = (sequelize) => {
         }
     }, {  
         tableName: 'User',  
-        freezeTableName: true  
+        freezeTableName: true,
+        timestamps: false, 
     });
     
     return User;
