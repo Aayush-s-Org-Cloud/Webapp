@@ -63,7 +63,7 @@ const createUser = async (request, response) => {
 
         // Generate verification token
         const token = uuidv4();
-        const verificationLink = `http://demo.aayushpatel.ninja/verify?token=${encodeURIComponent(token)}&userId=${newUser.id}`;
+        const verificationLink = `http://demo.aayushpatel.ninja/v1/user/verify?email=${encodeURIComponent(email)}&token=${encodeURIComponent(token)}`;
         const expiresAt = new Date(Date.now() + 2 * 60 * 1000); // 2 minutes from now
 
         // Update the user with verification token and expiration
