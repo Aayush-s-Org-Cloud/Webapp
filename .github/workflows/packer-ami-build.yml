@@ -71,9 +71,9 @@ jobs:
       - name: Setup AWS Credentials for ${{ matrix.account }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets[ format('{0}_AWS_ACCESS_KEY_ID', matrix.account | title) ] }}
-          aws-secret-access-key: ${{ secrets[ format('{0}_AWS_SECRET_ACCESS_KEY', matrix.account | title) ] }}
-          aws-region: ${{ secrets[ format('{0}_AWS_REGION', matrix.account | title) ] }}
+          aws-access-key-id: ${{ secrets[ format('{0}_AWS_ACCESS_KEY_ID', matrix.account ) ] }}
+          aws-secret-access-key: ${{ secrets[ format('{0}_AWS_SECRET_ACCESS_KEY', matrix.account ) ] }}
+          aws-region: ${{ secrets[ format('{0}_AWS_REGION', matrix.account ) ] }}
 
       - name: Install AWS CLI
         run: |
