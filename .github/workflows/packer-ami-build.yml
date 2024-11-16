@@ -84,7 +84,7 @@ jobs:
       - name: Retrieve Latest AMI ID
         id: get_latest_ami
         run: |
-          AMI_ID=$(aws ec2 describe-images --owners self --filters "Name=name,Values=csye6225-ami*" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
+          AMI_ID=$(aws ec2 describe-images --owners self --filters "Name=name,Values=ami-*" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
           echo "::set-output name=ami_id::$AMI_ID"
 
       - name: Create New Launch Template Version
