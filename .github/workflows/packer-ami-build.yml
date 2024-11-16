@@ -16,7 +16,11 @@ jobs:
       SOURCE_AMI: ${{ secrets.SOURCE_AMI }}
       AMI_USERS: ${{ secrets.AMI_USERS }}
       AWS_DEFAULT_REGION: "us-east-1"
-     
+    strategy:
+      matrix:
+        account: [ dev, demo ]
+  
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -51,10 +55,102 @@ jobs:
       - name: Initialize Packer
         run: |
             packer init $GITHUB_WORKSPACE/packer/template.pkr.hcl
+      - name: Validate Packer template
+        run: |
+          packer validate \
+            -var "source_ami=${{ env.SOURCE_AMI }}" \
+            -var "subnet_id=${{ env.SUBNET_ID }}" \
+            packer/template.pkr.hcl
       - name: Build Packer Template
         run: |
               packer build \
                 -var "source_ami=${{ secrets.SOURCE_AMI }}" \
                 -var "subnet_id=${{ secrets.SUBNET_ID }}" \
                 $GITHUB_WORKSPACE/packer/template.pkr.hcl
-       
+      ## deployment
+      - name: Setup AWS Credentials for ${{ matrix.account }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets[ format('{0}_AWS_ACCESS_KEY_ID', matrix.account | title) ] }}
+          aws-secret-access-key: ${{ secrets[ format('{0}_AWS_SECRET_ACCESS_KEY', matrix.account | title) ] }}
+          aws-region: ${{ secrets[ format('{0}_AWS_REGION', matrix.account | title) ] }}
+
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+
+      - name: Retrieve Latest AMI ID
+        id: get_latest_ami
+        run: |
+          AMI_ID=$(aws ec2 describe-images --owners self --filters "Name=name,Values=csye6225-ami*" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
+          echo "::set-output name=ami_id::$AMI_ID"
+
+      - name: Create New Launch Template Version
+        id: create_launch_template
+        run: |
+          LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
+          # Retrieve Launch Template ID based on account
+          LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
+          # Dynamically retrieve the launch template name based on matrix account
+          LAUNCH_TEMPLATE_NAME=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account | upper) ] }}
+          CURRENT_VERSION=$(aws ec2 describe-launch-templates --launch-template-name $LAUNCH_TEMPLATE_NAME --query 'LaunchTemplates[0].LatestVersionNumber' --output text)
+          NEW_VERSION=$(aws ec2 create-launch-template-version \
+            --launch-template-name $LAUNCH_TEMPLATE_NAME \
+            --source-version "$CURRENT_VERSION" \
+            --version-description "Version with AMI $LATEST_AMI" \
+            --launch-template-data '{"ImageId":"'${LATEST_AMI}'"}' \
+            --query 'LaunchTemplateVersion.VersionNumber' \
+            --output text)
+          echo "::set-output name=new_version::$NEW_VERSION"
+
+      - name: Update Auto Scaling Group with New Launch Template Version
+        run: |
+          # Retrieve ASG name based on account
+          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account | title) ] }}
+          LAUNCH_TEMPLATE_ID=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_ID', matrix.account | title) ] }}
+          NEW_VERSION=${{ steps.create_launch_template.outputs.new_version }}
+          aws autoscaling update-auto-scaling-group \
+            --auto-scaling-group-name $ASG_NAME \
+            --launch-template "LaunchTemplateId=${LAUNCH_TEMPLATE_ID},Version=${NEW_VERSION}"
+
+      - name: Start Instance Refresh
+        id: start_refresh
+        run: |
+          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account | title) ] }}
+          REFRESH_ID=$(aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name $ASG_NAME \
+            --preferences '{"MinHealthyPercentage": 90}' \
+            --query 'InstanceRefreshId' \
+            --output text)
+          echo "::set-output name=refresh_id::$REFRESH_ID"
+
+      - name: Wait for Instance Refresh to Complete
+        run: |
+          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account | title) ] }}
+          REFRESH_ID=${{ steps.start_refresh.outputs.refresh_id }}
+          while true; do
+            STATUS=$(aws autoscaling describe-instance-refreshes \
+              --auto-scaling-group-name $ASG_NAME \
+              --query "InstanceRefreshes[?InstanceRefreshId=='${REFRESH_ID}'].Status" \
+              --output text)
+            echo "Current refresh status: $STATUS"
+            if [ "$STATUS" == "Successful" ]; then
+              echo "Instance refresh completed successfully."
+              exit 0
+            elif [ "$STATUS" == "Failed" ] || [ "$STATUS" == "Cancelled" ]; then
+              echo "Instance refresh failed or was cancelled."
+              exit 1
+            fi
+            echo "Waiting for instance refresh to complete..."
+            sleep 30
+          done
+
+      - name: Notify Success
+        if: success()
+        run: echo "Deployment to ${{ matrix.account }} account succeeded."
+
+      - name: Notify Failure
+        if: failure()
+        run: echo "Deployment to ${{ matrix.account }} account failed."
