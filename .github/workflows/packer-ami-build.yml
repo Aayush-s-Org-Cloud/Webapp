@@ -84,26 +84,34 @@ jobs:
       - name: Retrieve Latest AMI ID
         id: get_latest_ami
         run: |
-          AMI_ID=$(aws ec2 describe-images --owners self --filters "Name=name,Values=csye6225-ami*" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
-          echo "::set-output name=ami_id::$AMI_ID"
+            AMI_ID=$(aws ec2 describe-images --owners self --filters "Name=name,Values=csye6225-ami*" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
+            if [[ "$AMI_ID" == "None" || -z "$AMI_ID" ]]; then
+              echo "Error: Failed to retrieve a valid AMI ID."
+              exit 1
+            fi
+            echo "Retrieved AMI_ID: $AMI_ID"
+            echo "::set-output name=ami_id::$AMI_ID"
 
       - name: Create New Launch Template Version
         id: create_launch_template
         run: |
-          LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
-          # Retrieve Launch Template ID based on account
-          LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
-          # Dynamically retrieve the launch template name based on matrix account
-          LAUNCH_TEMPLATE_NAME=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account ) ] }}
-          CURRENT_VERSION=$(aws ec2 describe-launch-templates --launch-template-name $LAUNCH_TEMPLATE_NAME --query 'LaunchTemplates[0].LatestVersionNumber' --output text)
-          NEW_VERSION=$(aws ec2 create-launch-template-version \
-            --launch-template-name $LAUNCH_TEMPLATE_NAME \
-            --source-version "$CURRENT_VERSION" \
-            --version-description "Version with AMI $LATEST_AMI" \
-            --launch-template-data '{"ImageId":"'${LATEST_AMI}'"}' \
-            --query 'LaunchTemplateVersion.VersionNumber' \
-            --output text)
-          echo "::set-output name=new_version::$NEW_VERSION"
+            LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
+            if [[ "$LATEST_AMI" == "None" || -z "$LATEST_AMI" ]]; then
+              echo "Error: LATEST_AMI is not set. Exiting."
+              exit 1
+            fi
+            echo "Using LATEST_AMI: $LATEST_AMI"
+            LAUNCH_TEMPLATE_NAME=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account ) ] }}
+            CURRENT_VERSION=$(aws ec2 describe-launch-templates --launch-template-name $LAUNCH_TEMPLATE_NAME --query 'LaunchTemplates[0].LatestVersionNumber' --output text)
+            NEW_VERSION=$(aws ec2 create-launch-template-version \
+              --launch-template-name $LAUNCH_TEMPLATE_NAME \
+              --source-version "$CURRENT_VERSION" \
+              --version-description "Version with AMI $LATEST_AMI" \
+              --launch-template-data '{"ImageId":"'${LATEST_AMI}'"}' \
+              --query 'LaunchTemplateVersion.VersionNumber' \
+              --output text)
+            echo "New Launch Template Version: $NEW_VERSION"
+            echo "::set-output name=new_version::$NEW_VERSION"
 
       - name: Update Auto Scaling Group with New Launch Template Version
         run: |
