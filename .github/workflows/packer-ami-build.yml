@@ -94,7 +94,7 @@ jobs:
           # Retrieve Launch Template ID based on account
           LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
           # Dynamically retrieve the launch template name based on matrix account
-          LAUNCH_TEMPLATE_NAME=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account | upper) ] }}
+          LAUNCH_TEMPLATE_NAME=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account ) ] }}
           CURRENT_VERSION=$(aws ec2 describe-launch-templates --launch-template-name $LAUNCH_TEMPLATE_NAME --query 'LaunchTemplates[0].LatestVersionNumber' --output text)
           NEW_VERSION=$(aws ec2 create-launch-template-version \
             --launch-template-name $LAUNCH_TEMPLATE_NAME \
@@ -108,8 +108,8 @@ jobs:
       - name: Update Auto Scaling Group with New Launch Template Version
         run: |
           # Retrieve ASG name based on account
-          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account | title) ] }}
-          LAUNCH_TEMPLATE_ID=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_ID', matrix.account | title) ] }}
+          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}
+          LAUNCH_TEMPLATE_ID=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_ID', matrix.account ) ] }}
           NEW_VERSION=${{ steps.create_launch_template.outputs.new_version }}
           aws autoscaling update-auto-scaling-group \
             --auto-scaling-group-name $ASG_NAME \
@@ -118,7 +118,7 @@ jobs:
       - name: Start Instance Refresh
         id: start_refresh
         run: |
-          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account | title) ] }}
+          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}
           REFRESH_ID=$(aws autoscaling start-instance-refresh \
             --auto-scaling-group-name $ASG_NAME \
             --preferences '{"MinHealthyPercentage": 90}' \
@@ -128,7 +128,7 @@ jobs:
 
       - name: Wait for Instance Refresh to Complete
         run: |
-          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account | title) ] }}
+          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account ) ] }}
           REFRESH_ID=${{ steps.start_refresh.outputs.refresh_id }}
           while true; do
             STATUS=$(aws autoscaling describe-instance-refreshes \
