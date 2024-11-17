@@ -162,11 +162,11 @@ jobs:
         if: matrix.account == 'demo'
         run: |
           ASG_NAME="${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}"
-          LAUNCH_TEMPLATE_ID="${{ secrets[ format('{0}_LAUNCH_TEMPLATE_ID', matrix.account ) ] }}"
+          LAUNCH_TEMPLATE_ID="${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account ) ] }}"
           NEW_VERSION="${{ env.new_version }}"
           aws autoscaling update-auto-scaling-group \
             --auto-scaling-group-name "$ASG_NAME" \
-            --launch-template "LaunchTemplateId=${LAUNCH_TEMPLATE_ID},Version=${NEW_VERSION}"
+            --launch-template "LaunchTemplateId=${LAUNCH_TEMPLATE_NAME},Version=${NEW_VERSION}"
           echo "Updated Auto Scaling Group '$ASG_NAME' to use Launch Template version '$NEW_VERSION'."
 
       # 18. Start Instance Refresh (Only for Demo Account)
