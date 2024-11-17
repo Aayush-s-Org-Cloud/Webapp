@@ -168,4 +168,9 @@ provisioner "shell" {
       "echo 'Node.js and MySQL installed, app setup done!'"
     ]
   }
+
+# Post-processors
+  post-processor "manifest" {
+    output = "manifest.json"
+  }
 }
