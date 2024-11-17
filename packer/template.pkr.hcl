@@ -13,8 +13,8 @@ variable "aws_region" {
 }
 
 variable "source_ami" {
-  type    = string
-   
+  type = string
+
 }
 
 variable "ssh_username" {
@@ -23,8 +23,8 @@ variable "ssh_username" {
 }
 
 variable "subnet_id" {
-  type    = string
-   
+  type = string
+
 }
 source "amazon-ebs" "ubuntu" {
   region                      = var.aws_region
@@ -60,7 +60,7 @@ build {
     destination = "/tmp/webapp.zip"
   }
 
-  
+
 
   # Unzip the application
   provisioner "shell" {
@@ -81,18 +81,18 @@ build {
     ]
   }
   # Install CloudWatch Agent
-provisioner "shell" {
-  inline = [
-    "echo 'Installing CloudWatch Agent...'",
-    "sudo apt-get update -y",
-    "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
-    "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
-     
-  ]
-}
+  provisioner "shell" {
+    inline = [
+      "echo 'Installing CloudWatch Agent...'",
+      "sudo apt-get update -y",
+      "curl -s https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb -o amazon-cloudwatch-agent.deb",
+      "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb",
 
-provisioner "file" {
-  content = <<EOF
+    ]
+  }
+
+  provisioner "file" {
+    content     = <<EOF
 {
   "agent": {
     "metrics_collection_interval": 60,
@@ -148,28 +148,28 @@ provisioner "file" {
   }
 }
 EOF
-  destination = "/tmp/amazon-cloudwatch-agent.json"
-}
+    destination = "/tmp/amazon-cloudwatch-agent.json"
+  }
 
-# Move the configuration file to the final location with sudo
-provisioner "shell" {
-  inline = [
-    "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/",
-    "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
-    "echo 'CloudWatch Agent configuration moved to final directory.'",
-    "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s"
-  ]
-}
+  # Move the configuration file to the final location with sudo
+  provisioner "shell" {
+    inline = [
+      "sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/",
+      "sudo mv /tmp/amazon-cloudwatch-agent.json /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json",
+      "echo 'CloudWatch Agent configuration moved to final directory.'",
+      "sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json -s"
+    ]
+  }
 
   provisioner "shell" {
     inline = [
       "node --version",
-     
+
       "echo 'Node.js and MySQL installed, app setup done!'"
     ]
   }
 
-# Post-processors
+  # Post-processors
   post-processor "manifest" {
     output = "manifest.json"
   }
