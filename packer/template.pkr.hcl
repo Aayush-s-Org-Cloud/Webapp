@@ -169,3 +169,7 @@ provisioner "shell" {
     ]
   }
 }
+# Post-processors
+  post-processor "manifest" {
+    output = "manifest.json"
+  }

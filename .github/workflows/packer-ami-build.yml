@@ -68,97 +68,117 @@ jobs:
                 -var "subnet_id=${{ secrets.SUBNET_ID }}" \
                 $GITHUB_WORKSPACE/packer/template.pkr.hcl
       ## deployment
+      - name: Retrieve Latest AMI ID
+        id: get_latest_ami
+        run: |
+          AMI_ID=$(aws ec2 describe-images --owners self --filters "Name=name,Values=csye6225-ami*" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
+          if [[ "$AMI_ID" == "None" || -z "$AMI_ID" ]]; then
+            echo "Error: Failed to retrieve a valid AMI ID."
+            exit 1
+          fi
+          echo "Retrieved AMI_ID: $AMI_ID"
+          echo "::set-output name=ami_id::$AMI_ID"
+
+       
       - name: Setup AWS Credentials for ${{ matrix.account }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets[ format('{0}_AWS_ACCESS_KEY_ID', matrix.account ) ] }}
           aws-secret-access-key: ${{ secrets[ format('{0}_AWS_SECRET_ACCESS_KEY', matrix.account ) ] }}
           aws-region: ${{ secrets[ format('{0}_AWS_REGION', matrix.account ) ] }}
-
-      - name: Install AWS CLI
+ 
+      - name: Share AMI with Demo Account
+        if: matrix.account == 'dev'
         run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install --update
-
-      - name: Retrieve Latest AMI ID
-        id: get_latest_ami
-        run: |
-            AMI_ID=$(aws ec2 describe-images --owners self --filters "Name=name,Values=csye6225-ami*" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
-            if [[ "$AMI_ID" == "None" || -z "$AMI_ID" ]]; then
-              echo "Error: Failed to retrieve a valid AMI ID."
-              exit 1
-            fi
-            echo "Retrieved AMI_ID: $AMI_ID"
-            echo "::set-output name=ami_id::$AMI_ID"
-
+          AMI_ID="${{ steps.get_latest_ami.outputs.ami_id }}"
+          DEMO_ACCOUNT_ID="${{ secrets.AWS_DEMO_ACCOUNT_ID }}"   
+          aws ec2 modify-image-attribute \
+            --image-id "$AMI_ID" \
+            --launch-permission "Add=[{UserId=$DEMO_ACCOUNT_ID}]"
+          echo "Shared AMI '$AMI_ID' with account '$DEMO_ACCOUNT_ID'."
+ 
       - name: Create New Launch Template Version
+        if: matrix.account == 'demo'
         id: create_launch_template
         run: |
-            LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
-            if [[ "$LATEST_AMI" == "None" || -z "$LATEST_AMI" ]]; then
-              echo "Error: LATEST_AMI is not set. Exiting."
-              exit 1
-            fi
-            echo "Using LATEST_AMI: $LATEST_AMI"
-            LAUNCH_TEMPLATE_NAME=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account ) ] }}
-            CURRENT_VERSION=$(aws ec2 describe-launch-templates --launch-template-name $LAUNCH_TEMPLATE_NAME --query 'LaunchTemplates[0].LatestVersionNumber' --output text)
-            NEW_VERSION=$(aws ec2 create-launch-template-version \
-              --launch-template-name $LAUNCH_TEMPLATE_NAME \
-              --source-version "$CURRENT_VERSION" \
-              --version-description "Version with AMI $LATEST_AMI" \
-              --launch-template-data '{"ImageId":"'${LATEST_AMI}'"}' \
-              --query 'LaunchTemplateVersion.VersionNumber' \
-              --output text)
-            echo "New Launch Template Version: $NEW_VERSION"
-            echo "::set-output name=new_version::$NEW_VERSION"
+          LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
+          if [[ "$LATEST_AMI" == "None" || -z "$LATEST_AMI" ]]; then
+            echo "Error: LATEST_AMI is not set. Exiting."
+            exit 1
+          fi
+          echo "Using LATEST_AMI: $LATEST_AMI"
+          LAUNCH_TEMPLATE_NAME=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account ) ] }}
+          CURRENT_VERSION=$(aws ec2 describe-launch-templates --launch-template-name $LAUNCH_TEMPLATE_NAME --query 'LaunchTemplates[0].LatestVersionNumber' --output text)
+          NEW_VERSION=$(aws ec2 create-launch-template-version \
+            --launch-template-name $LAUNCH_TEMPLATE_NAME \
+            --source-version "$CURRENT_VERSION" \
+            --version-description "Version with AMI $LATEST_AMI" \
+            --launch-template-data "{\"ImageId\":\"$LATEST_AMI\"}" \
+            --query 'LaunchTemplateVersion.VersionNumber' \
+            --output text)
+          echo "New Launch Template Version: $NEW_VERSION"
+          echo "::set-output name=new_version::$NEW_VERSION"
 
+      
       - name: Update Auto Scaling Group with New Launch Template Version
+        if: matrix.account == 'demo'
         run: |
-          # Retrieve ASG name based on account
           ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}
           LAUNCH_TEMPLATE_ID=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_ID', matrix.account ) ] }}
           NEW_VERSION=${{ steps.create_launch_template.outputs.new_version }}
           aws autoscaling update-auto-scaling-group \
             --auto-scaling-group-name $ASG_NAME \
             --launch-template "LaunchTemplateId=${LAUNCH_TEMPLATE_ID},Version=${NEW_VERSION}"
+          echo "Updated Auto Scaling Group '$ASG_NAME' to use Launch Template version '$NEW_VERSION'."
 
+      
       - name: Start Instance Refresh
+        if: matrix.account == 'demo'
         id: start_refresh
         run: |
           ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}
           REFRESH_ID=$(aws autoscaling start-instance-refresh \
             --auto-scaling-group-name $ASG_NAME \
-            --preferences '{"MinHealthyPercentage": 90}' \
+            --preferences '{"MinHealthyPercentage": 90, "InstanceWarmup": 300}' \
             --query 'InstanceRefreshId' \
             --output text)
           echo "::set-output name=refresh_id::$REFRESH_ID"
 
+      
       - name: Wait for Instance Refresh to Complete
+        if: matrix.account == 'demo'
         run: |
           ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account ) ] }}
           REFRESH_ID=${{ steps.start_refresh.outputs.refresh_id }}
           while true; do
             STATUS=$(aws autoscaling describe-instance-refreshes \
-              --auto-scaling-group-name $ASG_NAME \
-              --query "InstanceRefreshes[?InstanceRefreshId=='${REFRESH_ID}'].Status" \
-              --output text)
-            echo "Current refresh status: $STATUS"
+              --auto-scaling-group-name "$ASG_NAME" \
+              --instance-refresh-ids "$REFRESH_ID" \
+              --query 'InstanceRefreshes[0].Status' --output text)
             if [ "$STATUS" == "Successful" ]; then
               echo "Instance refresh completed successfully."
               exit 0
             elif [ "$STATUS" == "Failed" ] || [ "$STATUS" == "Cancelled" ]; then
               echo "Instance refresh failed or was cancelled."
               exit 1
+            else
+              echo "Current status: $STATUS. Waiting for completion..."
+              sleep 30
             fi
-            echo "Waiting for instance refresh to complete..."
-            sleep 30
           done
 
+      
       - name: Notify Success
         if: success()
         run: echo "Deployment to ${{ matrix.account }} account succeeded."
 
+      
       - name: Notify Failure
         if: failure()
         run: echo "Deployment to ${{ matrix.account }} account failed."
+
+      
+      - name: Clean up
+        if: always()
+        run: |
+          rm -f packer-template/webapp.zip
