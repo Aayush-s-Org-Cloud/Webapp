@@ -68,14 +68,32 @@ jobs:
                 -var "subnet_id=${{ secrets.SUBNET_ID }}" \
                 $GITHUB_WORKSPACE/packer/template.pkr.hcl
       ## Deployment Steps
+      # After the Build Packer Template step
 
+      - name: Verify manifest.json creation
+        run: |
+          if [ -f ./manifest.json ]; then
+            echo "manifest.json exists."
+          else
+            echo "manifest.json does not exist."
+            exit 1
+          fi
+
+      - name: Upload Packer Manifest
+        uses: actions/upload-artifact@v3
+        with:
+          name: packer-manifest
+          path: ./manifest.json
       # 11. Download and Extract AMI ID from Manifest
       - name: Download Packer Manifest
         uses: actions/download-artifact@v3
         with:
           name: packer-manifest
           path: ./packer-manifest/
-
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip jq awscli
       - name: Extract AMI ID from Manifest
         id: extract_ami_id
         run: |
@@ -85,7 +103,7 @@ jobs:
             exit 1
           fi
           echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
-
+      
       # 12. List Matching AMIs (Debugging)
       - name: List Matching AMIs (Debugging)
         run: |
@@ -202,4 +220,4 @@ jobs:
         if: always()
         run: |
           rm -f packer-template/webapp.zip
-   
+        
