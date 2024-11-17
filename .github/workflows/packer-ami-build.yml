@@ -93,17 +93,17 @@ jobs:
       - name: Set Environment Variables Based on Account
         run: |
             if [ "${{ matrix.account }}" == "dev" ]; then
-              echo "AWS_ACCESS_KEY_ID=${{ secrets.dev_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-              echo "AWS_SECRET_ACCESS_KEY=${{ secrets.dev_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-              echo "AWS_REGION=${{ secrets.dev_AWS_REGION }}" >> $GITHUB_ENV
-              echo "LAUNCH_TEMPLATE_NAME=${{ secrets.dev_LAUNCH_TEMPLATE_NAME }}" >> $GITHUB_ENV
-              echo "ASG_NAME=${{ secrets.dev_ASG_NAME }}" >> $GITHUB_ENV
+              echo "AWS_ACCESS_KEY_ID=${{ secrets.DEV_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+              echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+              echo "AWS_REGION=${{ secrets.DEV_AWS_REGION }}" >> $GITHUB_ENV
+              echo "LAUNCH_TEMPLATE_NAME=${{ secrets.DEV_LAUNCH_TEMPLATE_NAME }}" >> $GITHUB_ENV
+              echo "ASG_NAME=${{ secrets.DEV_ASG_NAME }}" >> $GITHUB_ENV
             elif [ "${{ matrix.account }}" == "demo" ]; then
-              echo "AWS_ACCESS_KEY_ID=${{ secrets.demo_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
-              echo "AWS_SECRET_ACCESS_KEY=${{ secrets.demo_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-              echo "AWS_REGION=${{ secrets.demo_AWS_REGION }}" >> $GITHUB_ENV
-              echo "LAUNCH_TEMPLATE_NAME=${{ secrets.demo_LAUNCH_TEMPLATE_NAME }}" >> $GITHUB_ENV
-              echo "ASG_NAME=${{ secrets.demo_ASG_NAME }}" >> $GITHUB_ENV
+              echo "AWS_ACCESS_KEY_ID=${{ secrets.DEMO_AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+              echo "AWS_SECRET_ACCESS_KEY=${{ secrets.DEMO_AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+              echo "AWS_REGION=${{ secrets.DEMO_AWS_REGION }}" >> $GITHUB_ENV
+              echo "LAUNCH_TEMPLATE_NAME=${{ secrets.DEMO_LAUNCH_TEMPLATE_NAME }}" >> $GITHUB_ENV
+              echo "ASG_NAME=${{ secrets.DEMO_ASG_NAME }}" >> $GITHUB_ENV
             fi
       - name: Install dependencies
         run: |
@@ -143,11 +143,11 @@ jobs:
         if: matrix.account == 'dev'
         run: |
           AMI_ID="${{ env.AMI_ID }}"
-          DEMO_ACCOUNT_ID="${{ secrets.AWS_DEMO_ACCOUNT_ID }}"
+          DEMO_ACCOUNT_ID="${{ secrets.AMI_USERS }}"
           aws ec2 modify-image-attribute \
             --image-id "$AMI_ID" \
             --launch-permission "Add=[{UserId=$DEMO_ACCOUNT_ID}]"
-          echo "Shared AMI '$AMI_ID' with account '$DEMO_ACCOUNT_ID'."
+          echo "Shared AMI '$AMI_ID' with account '$AMI_USERS'."
 
       # 16. Create New Launch Template Version (Only for Demo Account)
       - name: Create New Launch Template Version
