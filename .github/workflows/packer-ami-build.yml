@@ -10,81 +10,63 @@ jobs:
     runs-on: ubuntu-latest
     environment: devtest
     env:
-      AMI_NAME_PREFIX: "custom-nodejs-mysql-ami-"
-      AWS_DEFAULT_REGION: "us-east-1"
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       SOURCE_AMI: ${{ secrets.SOURCE_AMI }}
       AMI_USERS: ${{ secrets.AMI_USERS }}
+      AWS_DEFAULT_REGION: "us-east-1"
     strategy:
       matrix:
         account: [ dev, demo ]
-    
+  
+      
     steps:
-      # 1. Checkout Repository
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      # 2. Install Dependencies
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y zip jq awscli
-
-      # 3. Create ZIP Artifact
-      - name: Create webapp.zip
+          sudo apt-get install -y zip
+          
+      - name: Create zip  
         run: |
-          zip -r webapp.zip . -x "*.git*" "packer-template/*" ".github/*"
-          mkdir -p packer-template
-          mv webapp.zip packer-template/
+              
+              zip -r webapp.zip .   
 
-      # 4. Upload the Application Artifact
       - name: Upload the application artifact
         uses: actions/upload-artifact@v3
         with:
           name: webapp
-          path: ./packer-template/webapp.zip
+          path: ./webapp.zip
 
-      # 5. Download the Artifact
       - name: Download the artifact
         uses: actions/download-artifact@v3
         with:
           name: webapp
-          path: ./packer-template/
 
-      # 6. Install Packer
+     
       - name: Install Packer
         uses: hashicorp/setup-packer@v3.1.0
         with:
-          packer-version: 1.11.2
-
-      # 7. Initialize Packer
+            packer-version: 1.11.2
+  
       - name: Initialize Packer
         run: |
-          packer init packer/template.pkr.hcl
-
-      # 8. Validate Packer Template
+            packer init $GITHUB_WORKSPACE/packer/template.pkr.hcl
       - name: Validate Packer template
         run: |
           packer validate \
             -var "source_ami=${{ env.SOURCE_AMI }}" \
             -var "subnet_id=${{ env.SUBNET_ID }}" \
             packer/template.pkr.hcl
-
-      # 9. Build Packer Template
       - name: Build Packer Template
         run: |
-          packer build \
-            -var "source_ami=${{ env.SOURCE_AMI }}" \
-            -var "subnet_id=${{ env.SUBNET_ID }}" \
-            packer/template.pkr.hcl
-
-      # 10. Upload Packer Manifest
-      - name: Upload Packer Manifest
-        uses: actions/upload-artifact@v3
-        with:
-          name: packer-manifest
-          path: ./manifest.json
-
+              packer build \
+                -var "source_ami=${{ secrets.SOURCE_AMI }}" \
+                -var "subnet_id=${{ secrets.SUBNET_ID }}" \
+                $GITHUB_WORKSPACE/packer/template.pkr.hcl
       ## Deployment Steps
 
       # 11. Download and Extract AMI ID from Manifest
