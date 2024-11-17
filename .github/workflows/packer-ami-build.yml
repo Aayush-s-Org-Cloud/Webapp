@@ -10,146 +10,184 @@ jobs:
     runs-on: ubuntu-latest
     environment: devtest
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AMI_NAME_PREFIX: "custom-nodejs-mysql-ami-"
+      AWS_DEFAULT_REGION: "us-east-1"
       SUBNET_ID: ${{ secrets.SUBNET_ID }}
       SOURCE_AMI: ${{ secrets.SOURCE_AMI }}
       AMI_USERS: ${{ secrets.AMI_USERS }}
-      AWS_DEFAULT_REGION: "us-east-1"
     strategy:
       matrix:
         account: [ dev, demo ]
-  
-      
+    
     steps:
+      # 1. Checkout Repository
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # 2. Install Dependencies
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y zip
-          
-      - name: Create zip  
-        run: |
-              
-              zip -r webapp.zip .   
+          sudo apt-get install -y zip jq awscli
 
+      # 3. Create ZIP Artifact
+      - name: Create webapp.zip
+        run: |
+          zip -r webapp.zip . -x "*.git*" "packer-template/*" ".github/*"
+          mkdir -p packer-template
+          mv webapp.zip packer-template/
+
+      # 4. Upload the Application Artifact
       - name: Upload the application artifact
         uses: actions/upload-artifact@v3
         with:
           name: webapp
-          path: ./webapp.zip
+          path: ./packer-template/webapp.zip
 
+      # 5. Download the Artifact
       - name: Download the artifact
         uses: actions/download-artifact@v3
         with:
           name: webapp
+          path: ./packer-template/
 
-     
+      # 6. Install Packer
       - name: Install Packer
         uses: hashicorp/setup-packer@v3.1.0
         with:
-            packer-version: 1.11.2
-  
+          packer-version: 1.11.2
+
+      # 7. Initialize Packer
       - name: Initialize Packer
         run: |
-            packer init $GITHUB_WORKSPACE/packer/template.pkr.hcl
+          packer init packer/template.pkr.hcl
+
+      # 8. Validate Packer Template
       - name: Validate Packer template
         run: |
           packer validate \
             -var "source_ami=${{ env.SOURCE_AMI }}" \
             -var "subnet_id=${{ env.SUBNET_ID }}" \
             packer/template.pkr.hcl
+
+      # 9. Build Packer Template
       - name: Build Packer Template
         run: |
-              packer build \
-                -var "source_ami=${{ secrets.SOURCE_AMI }}" \
-                -var "subnet_id=${{ secrets.SUBNET_ID }}" \
-                $GITHUB_WORKSPACE/packer/template.pkr.hcl
-      ## deployment
-      - name: Retrieve Latest AMI ID
-        id: get_latest_ami
+          packer build \
+            -var "source_ami=${{ env.SOURCE_AMI }}" \
+            -var "subnet_id=${{ env.SUBNET_ID }}" \
+            packer/template.pkr.hcl
+
+      # 10. Upload Packer Manifest
+      - name: Upload Packer Manifest
+        uses: actions/upload-artifact@v3
+        with:
+          name: packer-manifest
+          path: ./manifest.json
+
+      ## Deployment Steps
+
+      # 11. Download and Extract AMI ID from Manifest
+      - name: Download Packer Manifest
+        uses: actions/download-artifact@v3
+        with:
+          name: packer-manifest
+          path: ./packer-manifest/
+
+      - name: Extract AMI ID from Manifest
+        id: extract_ami_id
         run: |
-          AMI_ID=$(aws ec2 describe-images --owners self --filters "Name=name,Values=csye6225-ami*" --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' --output text)
-          if [[ "$AMI_ID" == "None" || -z "$AMI_ID" ]]; then
-            echo "Error: Failed to retrieve a valid AMI ID."
+          AMI_ID=$(jq -r '.builds[0].artifact_id' ./packer-manifest/manifest.json | cut -d ":" -f2)
+          if [[ -z "$AMI_ID" ]]; then
+            echo "Error: AMI ID not found in manifest."
             exit 1
           fi
-          echo "Retrieved AMI_ID: $AMI_ID"
-          echo "::set-output name=ami_id::$AMI_ID"
+          echo "AMI_ID=$AMI_ID" >> $GITHUB_ENV
 
-       
+      # 12. List Matching AMIs (Debugging)
+      - name: List Matching AMIs (Debugging)
+        run: |
+          aws ec2 describe-images --owners self --filters "Name=name,Values=${AMI_NAME_PREFIX}*" --query 'Images[].{ID:ImageId,Name:Name,CreationDate:CreationDate}' --output table
+
+      # 13. Verify AWS CLI Configuration
+      - name: Verify AWS CLI Configuration
+        run: |
+          aws sts get-caller-identity
+          aws configure list
+
+      # 14. Setup AWS Credentials for Current Account
       - name: Setup AWS Credentials for ${{ matrix.account }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets[ format('{0}_AWS_ACCESS_KEY_ID', matrix.account ) ] }}
           aws-secret-access-key: ${{ secrets[ format('{0}_AWS_SECRET_ACCESS_KEY', matrix.account ) ] }}
           aws-region: ${{ secrets[ format('{0}_AWS_REGION', matrix.account ) ] }}
- 
+
+      # 15. Share AMI with Demo Account (Only for Dev Account)
       - name: Share AMI with Demo Account
         if: matrix.account == 'dev'
         run: |
-          AMI_ID="${{ steps.get_latest_ami.outputs.ami_id }}"
-          DEMO_ACCOUNT_ID="${{ secrets.AWS_DEMO_ACCOUNT_ID }}"   
+          AMI_ID="${{ env.AMI_ID }}"
+          DEMO_ACCOUNT_ID="${{ secrets.AWS_DEMO_ACCOUNT_ID }}"
           aws ec2 modify-image-attribute \
             --image-id "$AMI_ID" \
             --launch-permission "Add=[{UserId=$DEMO_ACCOUNT_ID}]"
           echo "Shared AMI '$AMI_ID' with account '$DEMO_ACCOUNT_ID'."
- 
+
+      # 16. Create New Launch Template Version (Only for Demo Account)
       - name: Create New Launch Template Version
         if: matrix.account == 'demo'
         id: create_launch_template
         run: |
-          LATEST_AMI=${{ steps.get_latest_ami.outputs.ami_id }}
+          LATEST_AMI="${{ env.AMI_ID }}"
           if [[ "$LATEST_AMI" == "None" || -z "$LATEST_AMI" ]]; then
             echo "Error: LATEST_AMI is not set. Exiting."
             exit 1
           fi
           echo "Using LATEST_AMI: $LATEST_AMI"
-          LAUNCH_TEMPLATE_NAME=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account ) ] }}
-          CURRENT_VERSION=$(aws ec2 describe-launch-templates --launch-template-name $LAUNCH_TEMPLATE_NAME --query 'LaunchTemplates[0].LatestVersionNumber' --output text)
+          LAUNCH_TEMPLATE_NAME="${{ secrets[ format('{0}_LAUNCH_TEMPLATE_NAME', matrix.account ) ] }}"
+          CURRENT_VERSION=$(aws ec2 describe-launch-templates --launch-template-name "$LAUNCH_TEMPLATE_NAME" --query 'LaunchTemplates[0].LatestVersionNumber' --output text)
           NEW_VERSION=$(aws ec2 create-launch-template-version \
-            --launch-template-name $LAUNCH_TEMPLATE_NAME \
+            --launch-template-name "$LAUNCH_TEMPLATE_NAME" \
             --source-version "$CURRENT_VERSION" \
             --version-description "Version with AMI $LATEST_AMI" \
             --launch-template-data "{\"ImageId\":\"$LATEST_AMI\"}" \
             --query 'LaunchTemplateVersion.VersionNumber' \
             --output text)
           echo "New Launch Template Version: $NEW_VERSION"
-          echo "::set-output name=new_version::$NEW_VERSION"
+          echo "new_version=$NEW_VERSION" >> $GITHUB_ENV
 
-      
+      # 17. Update Auto Scaling Group with New Launch Template Version (Only for Demo Account)
       - name: Update Auto Scaling Group with New Launch Template Version
         if: matrix.account == 'demo'
         run: |
-          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}
-          LAUNCH_TEMPLATE_ID=${{ secrets[ format('{0}_LAUNCH_TEMPLATE_ID', matrix.account ) ] }}
-          NEW_VERSION=${{ steps.create_launch_template.outputs.new_version }}
+          ASG_NAME="${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}"
+          LAUNCH_TEMPLATE_ID="${{ secrets[ format('{0}_LAUNCH_TEMPLATE_ID', matrix.account ) ] }}"
+          NEW_VERSION="${{ env.new_version }}"
           aws autoscaling update-auto-scaling-group \
-            --auto-scaling-group-name $ASG_NAME \
+            --auto-scaling-group-name "$ASG_NAME" \
             --launch-template "LaunchTemplateId=${LAUNCH_TEMPLATE_ID},Version=${NEW_VERSION}"
           echo "Updated Auto Scaling Group '$ASG_NAME' to use Launch Template version '$NEW_VERSION'."
 
-      
+      # 18. Start Instance Refresh (Only for Demo Account)
       - name: Start Instance Refresh
         if: matrix.account == 'demo'
         id: start_refresh
         run: |
-          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}
+          ASG_NAME="${{ secrets[ format('{0}_ASG_NAME', matrix.account) ] }}"
           REFRESH_ID=$(aws autoscaling start-instance-refresh \
-            --auto-scaling-group-name $ASG_NAME \
+            --auto-scaling-group-name "$ASG_NAME" \
             --preferences '{"MinHealthyPercentage": 90, "InstanceWarmup": 300}' \
             --query 'InstanceRefreshId' \
             --output text)
-          echo "::set-output name=refresh_id::$REFRESH_ID"
+          echo "REFRESH_ID=$REFRESH_ID" >> $GITHUB_ENV
 
-      
+      # 19. Wait for Instance Refresh to Complete (Only for Demo Account)
       - name: Wait for Instance Refresh to Complete
         if: matrix.account == 'demo'
         run: |
-          ASG_NAME=${{ secrets[ format('{0}_ASG_NAME', matrix.account ) ] }}
-          REFRESH_ID=${{ steps.start_refresh.outputs.refresh_id }}
+          ASG_NAME="${{ secrets[ format('{0}_ASG_NAME', matrix.account ) ] }}"
+          REFRESH_ID="${{ env.REFRESH_ID }}"
           while true; do
             STATUS=$(aws autoscaling describe-instance-refreshes \
               --auto-scaling-group-name "$ASG_NAME" \
@@ -167,18 +205,19 @@ jobs:
             fi
           done
 
-      
+      # 20. Notify Success
       - name: Notify Success
         if: success()
         run: echo "Deployment to ${{ matrix.account }} account succeeded."
 
-      
+      # 21. Notify Failure
       - name: Notify Failure
         if: failure()
         run: echo "Deployment to ${{ matrix.account }} account failed."
 
-      
+      # 22. Clean up
       - name: Clean up
         if: always()
         run: |
           rm -f packer-template/webapp.zip
+   
