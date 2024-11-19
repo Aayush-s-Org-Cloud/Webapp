@@ -28,24 +28,24 @@ const createUser = async (request, response) => {
 
     if (!email || !password || !first_name || !last_name) {
         logger.info('Missing required fields in createUser');
-        return response.status(400).json({ error: 'Missing required fields' });
+        return response.status(400).json();
     }
 
     if (!validator.validate(email)) {
         logger.info('Invalid email format in createUser');
-        return response.status(422).json({ error: 'Invalid email format' });
+        return response.status(422).json();
     }
 
     const nameValidation = /^[a-zA-Z0-9]+$/;
     if (!nameValidation.test(first_name) || !nameValidation.test(last_name)) {
         logger.info('First or last name validation failed in createUser');
-        return response.status(422).json({ error: 'Invalid name format' });
+        return response.status(422).json();
     }
 
     const passwordCondition = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     if (!passwordCondition.test(password)) {
         logger.info('Password validation failed in createUser');
-        return response.status(422).json({ error: 'Password does not meet complexity requirements' });
+        return response.status(422).json();
     }
 
     try {
@@ -104,9 +104,9 @@ const createUser = async (request, response) => {
     } catch (error) {
         logger.error("Failed to create new user", { error: error.message });
         if (error.name === 'SequelizeUniqueConstraintError') {
-            return response.status(409).json({ error: 'User with this email already exists' });
+            return response.status(409).json();
         }
-        response.status(500).json({ error: 'Internal server error', details: error.message });
+        response.status(500).json();
     }
 };
 
@@ -146,7 +146,7 @@ const updateUser = async (req, res) => {
         res.status(204).send();
     } catch (error) {
         logger.error("Failed to update user", { error: error.message });
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        res.status(500).json();
     }
 };
 
@@ -185,7 +185,7 @@ const getUserInfo = async (req, res) => {
         });
     } catch (error) {
         logger.error("Failed to retrieve user information", { error: error.message });
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        res.status(500).json();
     }
 };
 
