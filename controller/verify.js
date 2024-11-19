@@ -12,7 +12,7 @@ const verifyEmail = async (req, res) => {
     // Validate presence of email and token
     if (!email || !token) {
         logger.info('Email or token missing in verification request.');
-        return res.status(400).json({ message: 'Email and token are required.' });
+        return res.status(400).json();
     }
 
     try {
@@ -29,14 +29,14 @@ const verifyEmail = async (req, res) => {
 
         if (!user) {
             logger.info('User not found with provided email and token.');
-            return res.status(400).json({ message: 'Invalid token or email' });
+            return res.status(400).json();
         }
 
         // Check if token has expired
         const currentTime = new Date();
         if (user.verificationTokenExpiresAt < currentTime) {
             logger.info('Verification token has expired.');
-            return res.status(400).json({ message: 'Token expired' });
+            return res.status(400).json();
         }
 
         // Update user verification status
@@ -47,10 +47,10 @@ const verifyEmail = async (req, res) => {
         await user.save();
 
         logger.info(`User ${user.email} has been verified successfully.`);
-        res.status(200).json({ message: 'Email verified successfully' });
+        res.status(200).json();
     } catch (error) {
         logger.error('Verification error:', { error: error.message, stack: error.stack });
-        res.status(500).json({ message: 'Internal server error' });
+        res.status(500).json();
     }
 };
 
