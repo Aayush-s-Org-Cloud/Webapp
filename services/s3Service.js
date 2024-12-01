@@ -19,6 +19,7 @@ async function uploadFileToS3({ file, key, mimeType }) {
         ContentType: mimeType,
     };
     const start = Date.now(); 
+    let duration = null; 
     try {
         const result = await s3.upload(params).promise();
         const duration = Date.now() - start;  
@@ -26,6 +27,9 @@ async function uploadFileToS3({ file, key, mimeType }) {
         logger.info(`File uploaded to S3: ${key}`, { url: result.Location });
         return result.Location;  
     } catch (error) {
+        if (duration !== null) {
+            statsdClient.timing('s3.upload.duration', duration); 
+        }
         logger.error('Failed to upload file to S3', { error: error.message });
         statsdClient.timing('s3.upload.duration', duration); 
         throw error;
@@ -43,6 +47,7 @@ async function deleteFileFromS3(fileKey) {
         Key: fileKey,
     };
     const start = Date.now();
+    let duration = null;
     try {
         logger.info(`Attempting to delete file from S3 with key: ${fileKey}`);
         await s3.deleteObject(params).promise();
@@ -50,6 +55,9 @@ async function deleteFileFromS3(fileKey) {
         statsdClient.timing('s3.delete.duration', duration);
         logger.info(`File deleted successfully from S3: ${fileKey}`);
     } catch (error) {
+        if (duration !== null) {
+            statsdClient.timing('s3.upload.duration', duration); 
+        }
         logger.error('Error deleting file from S3', { error: error.message, stack: error.stack });
         statsdClient.timing('s3.delete.duration', duration);
         throw new Error('File deletion from S3 failed');
