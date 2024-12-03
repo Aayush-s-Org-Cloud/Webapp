@@ -3,7 +3,7 @@ name: Packer AMI Build
 on:
   push:
     branches:
-      - main
+      - demo
 
 jobs:
   build-ami:
